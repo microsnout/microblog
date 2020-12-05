@@ -1,0 +1,21 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <div class="media-content">
+    {% for post in posts %}
+        <div class="content">
+            <p class='mb-0'>
+            <a href="{{ post.get_abs_blog_url }}">{{ post.title }}</a>
+            <br>
+            <p class="mb-1 is-size-7">
+            Published {{ post.publish }} by {{ post.author }}
+            </p>
+            {{ post.body|truncatewords:50 }}
+            <br>
+            <small><a>Like</a> <a>Reply</a></small>
+            </p>
+        </div>
+    {% endfor %}
+    </div>
+    {% include "pagination.html" with page=page_obj %}
+{% endblock %}

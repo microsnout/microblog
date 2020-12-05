@@ -1,0 +1,39 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="columns">
+    <div class="column">
+        <div class="media-content">
+            <div class="content">
+                <p class="mb-0">
+                <strong>{{ post.title }}</strong>
+                <br>
+                <p class="mb-2 is-size-7">
+                    Published {{ post.publish }} by {{ post.author }}
+                </p>
+                {{ post.body }}
+                <br>
+                <small><a>Like</a> <a>Reply</a></small>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="column is-narrow">
+        <div class="box" style="width: 180px">
+        {% for pub in others %}
+            <div>
+            <p class="is-size-7">
+                <a href="{{ pub.get_abs_blog_url }}">
+                {{ pub.title }}
+                </a>
+            </p>
+            <p class="has-text-weight-light" style="font-size: 12px">
+                {{ pub.publish }}
+            </p>
+            <hr>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
