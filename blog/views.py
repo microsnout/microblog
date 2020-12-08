@@ -30,6 +30,8 @@ def detail(request, year, month, day, post):
     others = Post.published.all() \
                  .exclude(id=post.id)
     sent = False
+    modal = False
+    cd = []
     if request.method == 'POST':
         # Form was submitted
         form = EmailPostForm(request.POST)
@@ -42,8 +44,9 @@ def detail(request, year, month, day, post):
             message = f"{cd['name']} ({cd['me']}) thinks you may like:\n\n" \
                       f"{post.title}\n" \
                       f"{post_url}\n" 
-            send_mail(subject, message, 'microsnout@bell.net', [cd['you']])
+            #send_mail(subject, message, 'microsnout@bell.net', [cd['you']])
             sent = True
+            modal = True
     else:
         form = EmailPostForm()
     return render(request,
@@ -51,7 +54,9 @@ def detail(request, year, month, day, post):
                   {'post': post,
                    'others': others,
                    'sent': sent,
-                   'form': form})
+                   'form': form,
+                   'modal': modal,
+                   'modal_data': cd})
 
 class PostIndexView(ListView):
     queryset = Post.published.all()

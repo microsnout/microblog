@@ -23,8 +23,9 @@
                 </div>
             </div>
         </div>
-        <div class="column is-narrow">
+        <div id="recent-posts" class="column is-narrow">
             <div class="box" style="width: 180px">
+                <p class="mb-2 has-text-grey-light">Recent Posts</p>
             {% for pub in others %}
                 <div>
                 <p class="is-size-7">
@@ -35,7 +36,7 @@
                 <p class="has-text-weight-light" style="font-size: 12px">
                     {{ pub.publish }}
                 </p>
-                <hr>
+                <hr class="my-3">
                 </div>
             {% endfor %}
             </div>
@@ -43,6 +44,12 @@
     </div>
     <div class="bg-modal">
         <div class="box">
+        {% if sent %}
+            <p class="m-0">You have shared this post with:</p>
+            <strong class="mb-6">{{ modal_data.you }}</strong>
+            <br>
+            <a href="">Close</a>
+        {% else %}
             <form method="post" class="p-2">
                 {{ form.non_field_errors }}
                 <div class="mb-4 is-size-7 has-text-weight-bold" >
@@ -69,6 +76,7 @@
                 <input class="tag is-link" type="submit" value="Send e-mail">
                 <a onclick="closeModal()">Cancel</a>
             </form>
+        {% endif %}
         </div>
     </div>
     <script>
