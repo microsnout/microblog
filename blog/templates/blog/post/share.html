@@ -1,0 +1,40 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}
+Send to email address
+{% endblock title %}
+
+{% block content %}
+{% if sent %}
+    <p class="has-text-weight-bold">Post shared successfully</p>
+    <p class="is-italic">
+    "{{ post.title }}" 
+    </p>
+{% else %}
+    <form method="post" class="p-4">
+        {{ form.non_field_errors }}
+        <div class="mb-4 is-size-7 has-text-weight-bold" >
+            {{ form.you.errors }}
+            <label for="{{ form.you.id_for_label }}">
+                Send to email address:
+            </label>
+            <br>
+            {{ form.you }}
+        </div>
+        <div class="mb-4 is-size-7 has-text-weight-bold">
+            {{ form.name.errors }}
+            <label for="{{ form.name.id_for_label }}">Your name:</label>
+            <br>
+            {{ form.name }}
+        </div>
+        <div class="mb-4 is-size-7 has-text-weight-bold">
+            {{ form.me.errors }}
+            <label for="{{ form.me.id_for_label }}">Your email address:</label>
+            <br>
+            {{ form.me }}
+        </div>
+        {% csrf_token %}
+        <input class="tag is-link" type="submit" value="Send e-mail">
+    </form>
+{% endif %}
+{% endblock content %}

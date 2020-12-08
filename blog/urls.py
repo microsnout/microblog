@@ -9,4 +9,6 @@ urlpatterns = [
     path('<int:year>/<int:month>/<int:day>/<slug:post>/',
         views.detail,
         name='detail'),
+    path('<int:post_id>/share/',
+         views.share, name='share'),
 ]

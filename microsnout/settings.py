@@ -123,3 +123,11 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Email server config
+
+EMAIL_HOST = 'smtphm.sympatico.ca'
+EMAIL_HOST_USER = 'microsnout@bell.net'
+EMAIL_HOST_PASSWORD = 'Bell+Cat22'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
