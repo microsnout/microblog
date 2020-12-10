@@ -17,14 +17,15 @@
                 position: absolute;
                 top: 0px;
                 z-index: 1;
-                {% if modal %}
-                display: flex;
-                {% else %}
-                display: none;
-                {% endif %}
                 justify-content: center;
                 align-items: center;
             }
+
+            {% if modal %}
+            .bg-modal { display: flex; }
+            {% else %}
+            .bg-modal { display: none; }
+            {% endif %}
 
             .bg-content {
                 background-color: #f0f0f0;
@@ -52,7 +53,7 @@
                                     <input class="input" type="text" placeholder="Search">
                                 </div>
                                 <div class="control">
-                                    <button type="submit" class="button is-link">Submit</button>
+                                    <button type="submit" class="button is-info">Submit</button>
                                 </div>
                             </div>
                         </form>
@@ -68,10 +69,5 @@
                 <p>Microsnout 2020</p>
             </div>
         </footer>
-        <script>
-            function myModal() {
-                document.querySelector(".bg-modal").style.display="flex";
-            }
-        </script>
     </body>
 </html

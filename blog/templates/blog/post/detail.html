@@ -1,18 +1,19 @@
 {% extends 'blog/base.html' %}
+{% load filter %}
 
 {% block content %}
 <section class="section">
     <div class="columns">
         <div class="column">
-            <div class="media-content">
-                <div class="content">
+            <div class="p-2">
+                <div class="p-0">
                     <p class="mb-0">
                     <strong>{{ post.title }}</strong>
                     <br>
                     <p class="mb-2 is-size-7">
                         Published {{ post.publish }} by {{ post.author }}
                     </p>
-                    {{ post.body }}
+                    {{ post.body|linebreaks }}
                     <br>
                     <small>
                         <a>Like</a> 
@@ -20,6 +21,53 @@
                         <a onclick="openModal()">Email</a>
                     </small>
                     </p>
+                    {% with comments.count as total_comments %}
+                        <p>
+                        {{ total_comments }} comment{{ total_comments|pluralize }}
+                        </p>
+                    {% endwith %}
+                </div>
+                <div class="p-3">
+                {% for comment in comments %}
+                    <div class="media">
+                        <figure class="media-left">
+                            <p class="image is-64x64">
+                                {{ comment.author.email|gravatar:128 }}
+                            </p>
+                        </figure>
+                        <div class="media-content">
+                            <strong>{{ comment.author }}</strong>
+                            <span class="is-size-7">{{ comment.created }}</span>
+                            {{ comment.body|linebreaks }}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>There are no comments yet.</p>
+                {% endfor %}
+                {% if new_comment %}
+                    <p>Your comment has been added</p>
+                {% else %}
+                    <p>Add a new comment:</p>
+                    <form method='POST'>
+                        {{ form.non_field_errors }}
+                        <div>
+                            <div class="field">
+                                <p class="control">
+                                    <label for="{{ comment_form.author.id_for_label }}">Author:</label>
+                                    <br>
+                                    {{ comment_form.author }}
+                                </p>
+                            </div>
+                            <div class="field">
+                                <p class="control">
+                                    {{ comment_form.body }}
+                                </p>
+                            </div>
+                        </div>
+                        {% csrf_token %}
+                        <p><input class="button is-info" type="submit" name="add-comment" value="Add comment"></p>
+                    </form>
+                {% endif %}
                 </div>
             </div>
         </div>
@@ -73,7 +121,7 @@
                     {{ form.me }}
                 </div>
                 {% csrf_token %}
-                <input class="tag is-link" type="submit" value="Send e-mail">
+                <input class="tag is-link" type="submit" name="send-email" value="Send e-mail">
                 <a onclick="closeModal()">Cancel</a>
             </form>
         {% endif %}
