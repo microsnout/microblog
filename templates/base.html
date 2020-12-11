@@ -4,7 +4,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
+        <title>{% block title %}{% endblock %}</title>
         <link href="{% static "css/bulma.min.css" %}" rel="stylesheet">
         <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
         <meta name="description" content="">
@@ -41,7 +41,7 @@
         <nav class="navbar" role="navigation" aria-label="main navigation">
             <div class="navbar-menu">
                 <div class="navbar-start">
-                    <a class="navbar-item" href="{% url 'index' %}"> Home </a>
+                    <a class="navbar-item" href="{% url 'home' %}"> Home </a>
                     <a class="navbar-item" href="{% url 'blog:index' %}"> Index </a>
                 </div>
         

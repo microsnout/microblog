@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # microsnout
     'blog.apps.BlogConfig',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -146,3 +147,8 @@ EMAIL_HOST_USER = 'microsnout@bell.net'
 EMAIL_HOST_PASSWORD = 'Bell+Cat22'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
