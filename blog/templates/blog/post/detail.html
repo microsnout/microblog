@@ -45,8 +45,8 @@
                     <p>There are no comments yet.</p>
                 {% endfor %}
                 {% if user_commented %}
-                    <p>You commented on this post.</p>
-                {% else %}
+                    <p class="p-4 is-size-6 is-text-light">(You commented on this post.)</p>
+                {% elif user_authenticated %}
                     <p>Add a new comment:</p>
                     <form method='POST'>
                         {{ form.non_field_errors }}
@@ -58,6 +58,8 @@
                         {% csrf_token %}
                         <p><input class="button is-info" type="submit" name="add-comment" value="Add comment"></p>
                     </form>
+                {% else %}
+                    <p class="p-4 is-size-6 is-text-light">(You must be logged in to comment.)</p>
                 {% endif %}
                 </div>
             </div>

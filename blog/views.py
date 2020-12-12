@@ -77,7 +77,12 @@ def detail(request, year, month, day, post):
     comments = post.comments.filter(active=True)
 
     # Check if logged user has commented on this post
-    user_commented = comments.filter(author=request.user).exists()
+    if request.user.is_authenticated:
+        user_commented = comments.filter(author=request.user).exists()
+        user_authenticated = True
+    else:
+        user_commented = False
+        user_authenticated = False
 
     nm = "-"
     if 'add-comment' in request.POST:
@@ -92,6 +97,7 @@ def detail(request, year, month, day, post):
         'others': others,
         'comments': comments,
         'user_commented': user_commented,
+        'user_authenticated': user_authenticated,
     }
 
     # Include form for email sharing and new Comment form 
