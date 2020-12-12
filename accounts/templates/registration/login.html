@@ -3,10 +3,24 @@
 {% block title %}Log In{% endblock title %}
 
 {% block content %}
-<h2>Log In</h2>
-<form method='post'>
+
+<div class="px-6 pb-3">
+    <strong class="has-text-link">Log In</strong>
+    {% if form.errors %}
+        {% for error in form.errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    {% endif %}
+    <form class="" method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Log In</button>
-</form>
+    {% for field in form %}
+        <div class="block">
+            <small>{{ field.label }}</small>
+            <br>
+            {{ field }}
+        </div>
+    {% endfor %}
+        <button class="button block is-link" type="submit">Log In</button>
+    </form>
+</div>
 {% endblock content %}

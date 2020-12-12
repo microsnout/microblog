@@ -45,6 +45,7 @@ def add_new_comment(request, post, context):
         'add-comment' in request.POST:
         logger.debug("add_new_comment: POST")
         form = CommentForm(data=request.POST)
+        form.instance.author = request.user
         if form.is_valid():
             # Create Comment obj but don't save to db
             comment = form.save(commit=False)
@@ -72,7 +73,11 @@ def detail(request, year, month, day, post):
                  .exclude(id=post.id) \
                  .order_by("-created")[:6]
 
+    # All active comments on this post
     comments = post.comments.filter(active=True)
+
+    # Check if logged user has commented on this post
+    user_commented = comments.filter(author=request.user).exists()
 
     nm = "-"
     if 'add-comment' in request.POST:
@@ -86,6 +91,7 @@ def detail(request, year, month, day, post):
         'post': post,
         'others': others,
         'comments': comments,
+        'user_commented': user_commented,
     }
 
     # Include form for email sharing and new Comment form 

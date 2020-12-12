@@ -44,25 +44,16 @@
                 {% empty %}
                     <p>There are no comments yet.</p>
                 {% endfor %}
-                {% if new_comment %}
-                    <p>Your comment has been added</p>
+                {% if user_commented %}
+                    <p>You commented on this post.</p>
                 {% else %}
                     <p>Add a new comment:</p>
                     <form method='POST'>
                         {{ form.non_field_errors }}
-                        <div>
-                            <div class="field">
-                                <p class="control">
-                                    <label for="{{ comment_form.author.id_for_label }}">Author:</label>
-                                    <br>
-                                    {{ comment_form.author }}
-                                </p>
-                            </div>
-                            <div class="field">
-                                <p class="control">
-                                    {{ comment_form.body }}
-                                </p>
-                            </div>
+                        <div class="field">
+                            <p class="control">
+                                {{ comment_form.body }}
+                            </p>
                         </div>
                         {% csrf_token %}
                         <p><input class="button is-info" type="submit" name="add-comment" value="Add comment"></p>
