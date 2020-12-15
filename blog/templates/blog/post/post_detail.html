@@ -46,10 +46,10 @@
                 {% endfor %}
                 {% if user_commented %}
                     <p class="p-4 is-size-6 is-text-light">(You commented on this post.)</p>
-                {% elif user_authenticated %}
+                {% elif user.is_authenticated %}
                     <p>Add a new comment:</p>
                     <form method='POST'>
-                        {{ form.non_field_errors }}
+                        {{ comment_form.non_field_errors }}
                         <div class="field">
                             <p class="control">
                                 {{ comment_form.body }}
@@ -92,26 +92,26 @@
             <a href="">Close</a>
         {% else %}
             <form method="post" class="p-2">
-                {{ form.non_field_errors }}
+                {{ email_form.non_field_errors }}
                 <div class="mb-4 is-size-7 has-text-weight-bold" >
-                    {{ form.you.errors }}
-                    <label for="{{ form.you.id_for_label }}">
+                    {{ email_form.you.errors }}
+                    <label for="{{ email_form.you.id_for_label }}">
                         Send to email address:
                     </label>
                     <br>
-                    {{ form.you }}
+                    {{ email_form.you }}
                 </div>
                 <div class="mb-4 is-size-7 has-text-weight-bold">
-                    {{ form.name.errors }}
-                    <label for="{{ form.name.id_for_label }}">Your name:</label>
+                    {{ email_form.name.errors }}
+                    <label for="{{ email_form.name.id_for_label }}">Your name:</label>
                     <br>
-                    {{ form.name }}
+                    {{ email_form.name }}
                 </div>
                 <div class="mb-4 is-size-7 has-text-weight-bold">
-                    {{ form.me.errors }}
-                    <label for="{{ form.me.id_for_label }}">Your email address:</label>
+                    {{ email_form.me.errors }}
+                    <label for="{{ email_form.me.id_for_label }}">Your email address:</label>
                     <br>
-                    {{ form.me }}
+                    {{ email_form.me }}
                 </div>
                 {% csrf_token %}
                 <input class="tag is-link" type="submit" name="send-email" value="Send e-mail">
