@@ -36,7 +36,7 @@
                             </p>
                         </figure>
                         <div class="media-content">
-                            <strong>{{ comment.author }}</strong>
+                            <strong>{{ comment.visitor.name }}</strong>
                             <span class="is-size-7">{{ comment.created }}</span>
                             {{ comment.body|linebreaks }}
                         </div>
@@ -44,23 +44,40 @@
                 {% empty %}
                     <p>There are no comments yet.</p>
                 {% endfor %}
-                {% if user_commented %}
-                    <p class="p-4 is-size-6 is-text-light">(You commented on this post.)</p>
-                {% elif user_authenticated %}
-                    <p>Add a new comment:</p>
-                    <form method='POST'>
-                        {{ form.non_field_errors }}
-                        <div class="field">
-                            <p class="control">
-                                {{ comment_form.body }}
-                            </p>
-                        </div>
-                        {% csrf_token %}
-                        <p><input class="button is-info" type="submit" name="add-comment" value="Add comment"></p>
-                    </form>
-                {% else %}
-                    <p class="p-4 is-size-6 is-text-light">(You must be logged in to comment.)</p>
-                {% endif %}
+                    <div class="my-3 p-3" style="border-top: 1px solid hsl(204,86%,53%);">
+                        <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
+                            {{ visitor_form.non_field_errors }} 
+                            {{ visitor_form.comment }}   
+                            <div class="is-flex">
+                                <div class="mx-0">
+                                    <strong style="font-size: 12px;">Name:</strong>
+                                    <br>
+                                    {{ visitor_form.name }}&nbsp-&nbsp
+                                    <br>
+                                    <div id="visitor_name_help" style="text-align: center; font-size: 12px;">
+                                        - Enter name or userid -
+                                    </div>
+                                </div>
+                                <div class="mx-0">
+                                    <strong style="font-size: 12px;">Pin:</strong>
+                                    <br>
+                                    {{ visitor_form.pin }}
+                                    <br>
+                                    <div id="visitor_pin_help" style="text-align: center; font-size: 12px;">
+                                        - Enter 1 to 6 digit pin -
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input 
+                                id="id_comment-button"
+                                class="button is-info m-3" 
+                                type='submit' 
+                                name='comment-button' 
+                                value='Add Comment'
+                                disabled='true'>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,26 +109,26 @@
             <a href="">Close</a>
         {% else %}
             <form method="post" class="p-2">
-                {{ form.non_field_errors }}
+                {{ email_form.non_field_errors }}
                 <div class="mb-4 is-size-7 has-text-weight-bold" >
-                    {{ form.you.errors }}
-                    <label for="{{ form.you.id_for_label }}">
+                    {{ email_form.you.errors }}
+                    <label for="{{ email_form.you.id_for_label }}">
                         Send to email address:
                     </label>
                     <br>
-                    {{ form.you }}
+                    {{ email_form.you }}
                 </div>
                 <div class="mb-4 is-size-7 has-text-weight-bold">
-                    {{ form.name.errors }}
-                    <label for="{{ form.name.id_for_label }}">Your name:</label>
+                    {{ email_form.name.errors }}
+                    <label for="{{ email_form.name.id_for_label }}">Your name:</label>
                     <br>
-                    {{ form.name }}
+                    {{ email_form.name }}
                 </div>
                 <div class="mb-4 is-size-7 has-text-weight-bold">
-                    {{ form.me.errors }}
-                    <label for="{{ form.me.id_for_label }}">Your email address:</label>
+                    {{ email_form.me.errors }}
+                    <label for="{{ email_form.me.id_for_label }}">Your email address:</label>
                     <br>
-                    {{ form.me }}
+                    {{ email_form.me }}
                 </div>
                 {% csrf_token %}
                 <input class="tag is-link" type="submit" name="send-email" value="Send e-mail">
@@ -129,4 +146,7 @@
         }
     </script>
 </section>
+{% endblock %}
+
+{% block domready %}
 {% endblock %}

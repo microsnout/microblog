@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.conf import settings
-from visitor.models import Visitor
 
 import pdb
 
@@ -47,27 +46,33 @@ class Post(models.Model):
                              self.publish.month,
                              self.publish.day, self.slug])
 
+class Visitor(models.Model):
+    name = models.CharField(max_length=28, unique=True)
+    pin = models.CharField(max_length=6)
+    last_visit = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ('-last_visit',)
+
+    def __str__(self):
+        return self.name + ':' + self.pin
+
 class Comment (models.Model):
     post = models.ForeignKey(
                     Post,
                     on_delete=models.CASCADE,
                     related_name='comments')
-    author = models.ForeignKey(
-                    settings.AUTH_USER_MODEL,
-                    on_delete=models.CASCADE,
-                    related_name='comments')
     visitor = models.ForeignKey(
                     Visitor,
-                    null=True, blank=True,
                     on_delete=models.CASCADE,
                     related_name='comments')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    body = models.TextField()
     active = models.BooleanField(default=True)
+    body = models.CharField(max_length=300)
 
     class Meta:
         ordering = ('created',)
 
     def __str__(self):
-        return f'Comment by {self.author} on {self.post}'
+        return f"[{self.visitor}]@{self.created}"

@@ -1,58 +1,17 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, FormView, TemplateView
-from django.views import View
 from django.urls import reverse
-from django.views.generic.edit import ModelFormMixin
 from django.views.generic.detail import SingleObjectMixin
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
-from .forms import EmailPostForm, CommentForm
-from .models import Post, Comment
+from .forms import EmailPostForm, VisitorForm
+from .models import Post, Comment, Visitor
 
-# *****
-class ChildModelFormMixin(ModelFormMixin): 
-    ''' extends ModelFormMixin with the ability to include ChildModelForm '''
-    child_model = ""
-    child_fields = ()
-    child_form_class = None
+import sys
 
-    def get_child_model(self):
-        return self.child_model
-
-    def get_child_fields(self):
-        return self.child_fields
-
-    def get_child_form(self):
-        if not self.child_form_class:
-            self.child_form_class = model_forms.modelform_factory(self.get_child_model(), fields=self.get_child_fields())
-        return self.child_form_class(**self.get_form_kwargs())
-
-    def get_context_data(self, **kwargs):
-        if 'child_form' not in kwargs:
-            kwargs['child_form'] = self.get_child_form()
-        return super().get_context_data(**kwargs)
-
-    def post(self, request, *args, **kwargs):
-        form = self.get_form()
-        child_form = self.get_child_form()
-
-        # check if both forms are valid
-        form_valid = form.is_valid()
-        child_form_valid = child_form.is_valid()
-
-        if form_valid and child_form_valid:
-            return self.form_valid(form, child_form)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form, child_form):
-        self.object = form.save()
-        save_child_form = child_form.save(commit=False)
-        save_child_form.course_key = self.object
-        save_child_form.save()
-
-        return HttpResponseRedirect(self.get_success_url())
-
+# For adding AJAX 
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST    
 # *****
 
 # Debug logging only
@@ -62,34 +21,9 @@ logger = logging.getLogger(__name__)
 app_name = 'blog'
 
 # *****
-class PostDisplayView(DetailView):
-    template_name = 'blog/post/post_detail.html'
-    model = Post
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        post = self.object
-        others = Post.published.all() \
-                    .exclude(id=post.id) \
-                    .order_by("-created")[:6]
-        comments = post.comments.filter(active=True)
-
-        # Check if logged user has commented on this post
-        user_commented = False
-        if self.request.user.is_authenticated:
-            user_commented = comments.filter(author=self.request.user).exists()
-
-        context.update({
-            'email_form': EmailPostForm,
-            'comment_form': CommentForm,
-            'others': others,
-            'comments': comments,
-            'user_commented': user_commented,
-        })
-        return context
     
 class PostFormView(SingleObjectMixin, TemplateView):
-    template_name = 'blog/post/post_detail.html'
+    template_name = 'blog/post/detail.html'
     form_class = EmailPostForm
     model = Post
 
@@ -129,15 +63,112 @@ class PostFormView(SingleObjectMixin, TemplateView):
     def get_success_url(self):
         return reverse('blog:detail', kwargs=self.kwargs)
 
-class PostDetailView(View):
-
-    def get(self, request, *args, **kwargs):
-        view = PostDisplayView.as_view()
-        return view(request, *args, **kwargs)
+class PostDetailView(DetailView):
+    template_name = 'blog/post/detail.html'
+    model = Post
 
     def post(self, request, *args, **kwargs):
-        view = PostFormView.as_view()
-        return view(request, *args, **kwargs)
+        post_data = request.POST or None
+        logger.debug(f"PostDetailView:post data= {post_data}")
+        self.object = self.get_object()
+        post = self.object
+        others = Post.published.all() \
+                    .exclude(id=post.id) \
+                    .order_by("-created")[:6]
+        comments = post.comments.filter(active=True)
+        context = self.get_context_data(object=self.object)
+
+        if 'comment-button' in request.POST:
+            visitor_form = VisitorForm(post_data, prefix='visitor') 
+            self.add_comment(request, visitor_form)
+            return HttpResponseRedirect(request.path)
+
+        # Check for valid name and pin from session
+        visitor_name = request.session.get('Visitor', False)
+        logger.debug(f"PostDetailView:post found session name: '{visitor_name}'")
+        if visitor_name:
+            try:
+                visitor = Visitor.objects.get(name= visitor_name)
+                visitor_pin = visitor.pin
+                logger.debug(f"PostDetailView:post found pin: '{visitor_pin}'")
+            except:
+                logger.debug(f"PostDetailView:post Exception:'{sys.exc_info()[0]}'")
+            finally:
+                if visitor_pin:
+                    visitor_form = VisitorForm(
+                                    initial= { 
+                                        'name': visitor_name, 
+                                        'pin': visitor_pin, },
+                                    prefix='visitor')
+                else:
+                    visitor_form = VisitorForm(prefix='visitor')
+        else:
+            visitor_form = VisitorForm(prefix='visitor')
+                
+        context.update({
+            'email_form': EmailPostForm,
+            'visitor_form': visitor_form,
+            'others': others,
+            'comments': comments,
+        })
+        return self.render_to_response(context)
+
+    def get(self, request, *args, **kwargs):
+        logger.debug(f"GET request={request}")
+        return self.post(request, *args, **kwargs)
+    
+    def add_comment(self, request, form):
+        if form.is_valid():
+            cd = form.cleaned_data
+            logger.debug(f"HomeView: visitor form valid: cd={cd}")
+            visitor, new = Visitor.objects.get_or_create(
+                            name= cd['name'],
+                            pin= cd['pin'])
+            if new:
+                logger.debug(f"Created visitor: '{visitor}'")
+            else:
+                logger.debug(f"Using visitor: '{visitor}'")
+
+            # Remember valid user name
+            request.session['Visitor'] = cd['name']
+            
+            try:
+                new_comment = Comment(
+                                post= self.object,
+                                visitor= visitor,
+                                body= cd['comment'])
+                new_comment.save()
+            except:
+                logger.debug(f"AddComment Exception:'{sys.exc_info()[0]}'")
+        else:
+            logger.debug("HomeView: visitor form NOT valid")
+
+    
+@require_POST
+def visitor_query(request):
+    name = request.POST.get('name')
+    pin = request.POST.get('pin')
+
+    # Debug output
+    logger.debug(f"name='{name}'")
+    logger.debug(f"pin='{pin}'")
+
+    if name and len(name) > 1:
+        try:
+            visitor = Visitor.objects.get(name=name)
+            logger.debug(f"Found name:'{name}'")
+            pin_match = (pin == visitor.pin)
+            logger.debug(f"Pin match: [{pin_match}]")
+            if pin_match:
+                return JsonResponse({'status': 'Match'})
+            else:
+                return JsonResponse({'status': 'Found'})
+        except:
+            logger.debug(f"Not found name:'{name}'")
+            logger.debug(f"Exception:'{sys.exc_info()[0]}'")
+            return JsonResponse({'status': 'Avail'})
+
+    return JsonResponse({'status':'Null'})
 
 # *****
 
@@ -169,71 +200,6 @@ def add_email_modal(request, post, context):
             'form': form
         })
 
-def detail(request, year, month, day, post):
-    logger.debug("HELLO HELLO HELLO HELLO")
-    post = get_object_or_404(Post, slug=post,
-                                   status='published',
-                                   publish__year=year,
-                                   publish__month=month,
-                                   publish__day=day)
-    
-    # Most recent 6 posts not including the detailed one
-    others = Post.published.all() \
-                 .exclude(id=post.id) \
-                 .order_by("-created")[:6]
-
-    # All active comments on this post
-    comments = post.comments.filter(active=True)
-
-    # Check if logged user has commented on this post
-    if request.user.is_authenticated:
-        user_commented = comments.filter(author=request.user).exists()
-        user_authenticated = True
-    else:
-        user_commented = False
-        user_authenticated = False
-
-    nm = "-"
-    if 'add-comment' in request.POST:
-        nm = "AC"
-    if 'send-email' in request.POST:
-        nm = "SE"
-    logger.debug( f">>>detail: {request.method} name:{nm}" )
-
-    # The detailed post and the others
-    context = {
-        'post': post,
-        'others': others,
-        'comments': comments,
-        'user_commented': user_commented,
-        'user_authenticated': user_authenticated,
-    }
-
-    # Include form for email sharing and new Comment form 
-    add_email_modal(request, post, context)
-
-    comment = None
-    if request.method == 'POST' and \
-        'add-comment' in request.POST:
-        form = CommentForm(data=request.POST)
-        form.instance.author = request.user
-        if form.is_valid():
-            # Create Comment obj but don't save to db
-            comment = form.save(commit=False)
-            # Assign current post to the comment
-            comment.post = post
-            # Save to db
-            comment.save()
-            return redirect(post)
-    else:
-        form = CommentForm()
-
-    context.update({
-        'new_comment': comment,
-        'comment_form': form
-    })
-        
-    return render(request, 'blog/post/detail.html', context)
 
 class PostIndexView(ListView):
     queryset = Post.published.all()

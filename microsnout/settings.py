@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     # microsnout
     'blog.apps.BlogConfig',
     'accounts',
-    'visitor',
 ]
 
 MIDDLEWARE = [
@@ -140,6 +139,10 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Email server config
 

@@ -9,9 +9,6 @@ urlpatterns = [
     path('<int:year>/<int:month>/<int:day>/<slug:slug>/',
         PostDetailView.as_view(),
         name='detail'),
-    path('<int:year>/<int:month>/<int:day>/<slug:post>/',
-        views.detail,
-        name='detail2'),
-    path('<int:post_id>/share/',
-         views.share, name='share'),
+    path('<int:post_id>/share/', views.share, name='share'),
+    path('visitor_query/', views.visitor_query, name='visitor-query'),
 ]

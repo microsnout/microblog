@@ -9,6 +9,7 @@
         <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" type="image/png" href="{% static 'images/favicon.ico' %}">
         <style>
             .bg-modal {
                 width: 100%;
@@ -35,7 +36,14 @@
                 position: relative;
             }
         </style>
-        <script type="text/javascript" src="{% static 'js/blog.js' %}"></script>
+        <script src="{% static 'js/jquery-3.5.1.js' %}"></script>
+        <script src="{% static 'js/scrap-jquery.js' %}"></script>
+        <script>
+            $(document).ready(function(){
+                {% block domready %}
+                {% endblock %}
+            })
+        </script>
     </head>
     <body>
         {% if user.is_authenticated %}
@@ -43,12 +51,12 @@
             User: <strong>{{ user.username }}</strong>
         </p> 
         {% endif %}
-        <nav class="navbar" role="navigation" aria-label="main navigation">
-            <div class="navbar-menu">
+        <nav class="navbar has-background-info" role="navigation" aria-label="main navigation">
+            <div class="navbar-menu is-active">
                 <div class="navbar-start">
-                    <a class="navbar-item" href="{% url 'home' %}"> Home </a>
-                    <a class="navbar-item" href="{% url 'blog:index' %}"> Blog </a>
-                    <a class="navbar-item" href="/admin/"> Admin </a>
+                    <a class="navbar-item has-text-white" href="{% url 'home' %}"> Home </a>
+                    <a class="navbar-item has-text-white" href="{% url 'blog:index' %}"> Blog </a>
+                    <a class="navbar-item has-text-white" href="/admin/"> Admin </a>
                 </div>
         
                 <div class="navbar-end">
