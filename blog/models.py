@@ -3,7 +3,8 @@ from django.utils import timezone
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.conf import settings
-
+from django.core.files.storage import FileSystemStorage
+import os
 import pdb
 
 
@@ -50,6 +51,12 @@ class Visitor(models.Model):
     name = models.CharField(max_length=28, unique=True)
     pin = models.CharField(max_length=6)
     last_visit = models.DateTimeField(auto_now=True)
+    avatar = models.ImageField(
+                upload_to='images/avatars/',
+                storage=FileSystemStorage(
+                            location=settings.MEDIA_AVATAR_FILES,
+                            base_url=settings.MEDIA_AVATAR_URL),
+                default="SeekPng.com_avatar-png_1150362.png")
 
     class Meta:
         ordering = ('-last_visit',)
@@ -68,7 +75,7 @@ class Comment (models.Model):
                     related_name='comments')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=True) 
     body = models.CharField(max_length=300)
 
     class Meta:

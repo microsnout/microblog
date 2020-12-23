@@ -2,7 +2,7 @@
 {% load filter %}
 
 {% block content %}
-<section class="section">
+<section class="section py-2">
     <div class="columns">
         <div class="column">
             <div class="p-2">
@@ -31,8 +31,8 @@
                 {% for comment in comments %}
                     <div class="media">
                         <figure class="media-left">
-                            <p class="image is-64x64">
-                                {{ comment.author.email|gravatar:128 }}
+                            <p class="image is-32x32">
+                                <img src="{{ comment.visitor.avatar.url }}">
                             </p>
                         </figure>
                         <div class="media-content">
@@ -44,10 +44,24 @@
                 {% empty %}
                     <p>There are no comments yet.</p>
                 {% endfor %}
-                    <div class="my-3 p-3" style="border-top: 1px solid hsl(204,86%,53%);">
+                    <div class="my-3 p-3" style="border: 1px solid hsl(204,86%,53%);">
                         <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
-                            {{ visitor_form.non_field_errors }} 
-                            {{ visitor_form.comment }}   
+                            <div class="is-flex">
+                                {% if visitor_avatar %}
+                                <div class="is-flex is-flex-direction-column">
+                                    <div class="image is-32x32 mr-3">
+                                        <img src="{{ visitor_avatar }}">
+                                    </div>
+                                    <div class="">
+                                    <a style="font-size: 10px">Change</a>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    {{ visitor_form.non_field_errors }} 
+                                    {{ visitor_form.comment }}   
+                                </div>
+                            </div>
                             <div class="is-flex">
                                 <div class="mx-0">
                                     <strong style="font-size: 12px;">Name:</strong>
@@ -69,14 +83,33 @@
                                 </div>
                             </div>
 
-                            <input 
-                                id="id_comment-button"
-                                class="button is-info m-3" 
-                                type='submit' 
-                                name='comment-button' 
-                                value='Add Comment'
-                                disabled='true'>
+                            <div class="is-flex">
+                                <input 
+                                    id="id_comment-button"
+                                    class="button is-info m-3" 
+                                    type='submit' 
+                                    name='comment-button' 
+                                    value='Add Comment'
+                                    disabled='true'>
+                            </div>
                         </form>
+                    </div>
+                    <div>
+                        <table class="table">
+                            <tbody>
+                                {% for row in avatars %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td>
+                                        <div class="image is-32x32">
+                                            <img src="/media/images/avatars/{{ cell }}">
+                                        </div>
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

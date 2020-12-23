@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, FormView, TemplateView
 from django.urls import reverse
@@ -8,6 +9,8 @@ from .forms import EmailPostForm, VisitorForm
 from .models import Post, Comment, Visitor
 
 import sys
+import os
+import os.path
 
 # For adding AJAX 
 from django.http import JsonResponse
@@ -19,6 +22,19 @@ import logging
 logger = logging.getLogger(__name__)
 
 app_name = 'blog'
+
+def get_avatar_files():
+    names = [name for name in os.listdir(settings.MEDIA_AVATAR_FILES)
+                    if name.endswith('.png')]
+    return names
+
+def refactor_list( list, n ):
+    new_ = []
+    while list:
+        new_.append( list[:n] )
+        del list[:n]
+    return new_
+
 
 # *****
     
@@ -86,12 +102,15 @@ class PostDetailView(DetailView):
         # Check for valid name and pin from session
         visitor_name = request.session.get('Visitor', False)
         logger.debug(f"PostDetailView:post found session name: '{visitor_name}'")
+        visitor_avatar = None
         if visitor_name:
             try:
                 visitor = Visitor.objects.get(name= visitor_name)
                 visitor_pin = visitor.pin
+                visitor_avatar = visitor.avatar.url
                 logger.debug(f"PostDetailView:post found pin: '{visitor_pin}'")
             except:
+                visitor_pin = None
                 logger.debug(f"PostDetailView:post Exception:'{sys.exc_info()[0]}'")
             finally:
                 if visitor_pin:
@@ -104,12 +123,14 @@ class PostDetailView(DetailView):
                     visitor_form = VisitorForm(prefix='visitor')
         else:
             visitor_form = VisitorForm(prefix='visitor')
-                
+
         context.update({
             'email_form': EmailPostForm,
             'visitor_form': visitor_form,
             'others': others,
             'comments': comments,
+            'avatars': refactor_list( get_avatar_files(), 5 ),
+            'visitor_avatar': visitor_avatar,
         })
         return self.render_to_response(context)
 

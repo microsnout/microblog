@@ -157,5 +157,7 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
-MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+MEDIA_AVATAR_URL = '/media/images/avatars/'
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_AVATAR_FILES = MEDIA_ROOT / 'images/avatars/'
