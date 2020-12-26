@@ -14,7 +14,7 @@ import os.path
 
 # For adding AJAX 
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST    
+from django.views.decorators.http import require_POST, require_GET    
 # *****
 
 # Debug logging only
@@ -87,6 +87,12 @@ class PostDetailView(DetailView):
         post_data = request.POST or None
         logger.debug(f"PostDetailView:post data= {post_data}")
         self.object = self.get_object()
+
+        if 'comment-button' in request.POST:
+            visitor_form = VisitorForm(post_data, prefix='visitor') 
+            self.add_comment(request, visitor_form)
+            return HttpResponseRedirect(request.path)
+
         post = self.object
         others = Post.published.all() \
                     .exclude(id=post.id) \
@@ -94,20 +100,17 @@ class PostDetailView(DetailView):
         comments = post.comments.filter(active=True)
         context = self.get_context_data(object=self.object)
 
-        if 'comment-button' in request.POST:
-            visitor_form = VisitorForm(post_data, prefix='visitor') 
-            self.add_comment(request, visitor_form)
-            return HttpResponseRedirect(request.path)
-
         # Check for valid name and pin from session
         visitor_name = request.session.get('Visitor', False)
         logger.debug(f"PostDetailView:post found session name: '{visitor_name}'")
         visitor_avatar = None
+        valid_visitor = None
         if visitor_name:
             try:
                 visitor = Visitor.objects.get(name= visitor_name)
                 visitor_pin = visitor.pin
                 visitor_avatar = visitor.avatar.url
+                valid_visitor = visitor_name
                 logger.debug(f"PostDetailView:post found pin: '{visitor_pin}'")
             except:
                 visitor_pin = None
@@ -131,6 +134,7 @@ class PostDetailView(DetailView):
             'comments': comments,
             'avatars': refactor_list( get_avatar_files(), 5 ),
             'visitor_avatar': visitor_avatar,
+            'valid_visitor': valid_visitor,
         })
         return self.render_to_response(context)
 
@@ -181,7 +185,7 @@ def visitor_query(request):
             pin_match = (pin == visitor.pin)
             logger.debug(f"Pin match: [{pin_match}]")
             if pin_match:
-                return JsonResponse({'status': 'Match'})
+                return JsonResponse({'status': 'Match', 'avatar_url': visitor.avatar.url})
             else:
                 return JsonResponse({'status': 'Found'})
         except:
@@ -190,6 +194,23 @@ def visitor_query(request):
             return JsonResponse({'status': 'Avail'})
 
     return JsonResponse({'status':'Null'})
+
+@require_POST
+def avatar_select(request, *args, **kwargs):
+    logger.debug(f"avatar_select: {kwargs}")
+
+    # Check for valid name and pin from session
+    visitor_name = request.session.get('Visitor', False)
+    logger.debug(f"avatar_select: found session name: '{visitor_name}'")
+    if visitor_name:
+        try:
+            visitor = Visitor.objects.get(name= visitor_name)
+            visitor.avatar = kwargs['file']
+            visitor.save()
+        except:
+            logger.debug(f"avatar_select: Exception:'{sys.exc_info()[0]}'")
+
+    return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
 
 # *****
 

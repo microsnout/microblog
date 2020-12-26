@@ -39,6 +39,9 @@
                             <strong>{{ comment.visitor.name }}</strong>
                             <span class="is-size-7">{{ comment.created }}</span>
                             {{ comment.body|linebreaks }}
+                            {% if valid_visitor == comment.visitor.name %}
+                            <a href="" class="delete is-small"></a>
+                            {% endif %}
                         </div>
                     </div>
                 {% empty %}
@@ -50,10 +53,10 @@
                                 {% if visitor_avatar %}
                                 <div class="is-flex is-flex-direction-column">
                                     <div class="image is-32x32 mr-3">
-                                        <img src="{{ visitor_avatar }}">
+                                        <img id="id_visitor-avatar" src="{{ visitor_avatar }}" alt=".">
                                     </div>
                                     <div class="">
-                                    <a style="font-size: 10px">Change</a>
+                                    <a id="id_avatar-change" onclick="openTable()" style="font-size: 10px">Change</a>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -86,30 +89,37 @@
                             <div class="is-flex">
                                 <input 
                                     id="id_comment-button"
-                                    class="button is-info m-3" 
+                                    class="button is-info is-small mr-3 mt-3" 
                                     type='submit' 
                                     name='comment-button' 
                                     value='Add Comment'
                                     disabled='true'>
                             </div>
                         </form>
-                    </div>
-                    <div>
-                        <table class="table">
-                            <tbody>
-                                {% for row in avatars %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td>
-                                        <div class="image is-32x32">
-                                            <img src="/media/images/avatars/{{ cell }}">
-                                        </div>
-                                    </td>
+                        <div id='id_avatar-table' style="display: none">
+                            <form action="/blog/avatar_select/" method="post">
+                            <table class="table">
+                                <tbody>
+                                    {% for row in avatars %}
+                                    <tr>
+                                        {% for cell in row %}
+                                        <td>
+                                            <div class="image is-32x32">
+                                                <input 
+                                                    type='image' 
+                                                    src="/media/images/avatars/{{ cell }}" 
+                                                    formaction="/blog/avatar_select/{{ cell }}" 
+                                                    name="avatar-select" 
+                                                    width="32" height="32">
+                                            </div>
+                                        </td>
+                                        {% endfor %}
+                                    </tr>
                                     {% endfor %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -176,6 +186,9 @@
         }
         function closeModal() {
             document.querySelector(".bg-modal").style.display="none";
+        }
+        function openTable() {
+            document.querySelector("#id_avatar-table").style.display="flex";
         }
     </script>
 </section>

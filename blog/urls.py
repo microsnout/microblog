@@ -11,4 +11,5 @@ urlpatterns = [
         name='detail'),
     path('<int:post_id>/share/', views.share, name='share'),
     path('visitor_query/', views.visitor_query, name='visitor-query'),
+    path('avatar_select/<str:file>', views.avatar_select, name='avatar-select'),
 ]
