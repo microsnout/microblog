@@ -2,7 +2,6 @@ from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, FormView, TemplateView
 from django.urls import reverse
-from django.views.generic.detail import SingleObjectMixin
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
 from .forms import EmailPostForm, VisitorForm
@@ -29,37 +28,84 @@ def get_avatar_files():
     return names
 
 def refactor_list( list, n ):
+    ''' Create list of rows of n objects each. '''
     new_ = []
     while list:
         new_.append( list[:n] )
         del list[:n]
     return new_
 
-
-# *****
+# -----------------------------------------------------
     
-class PostFormView(SingleObjectMixin, TemplateView):
+def session_query(request, **kwargs):
+    name = request.session.get('Visitor', False)
+    logger.debug(f"session_query: name=({name})")
+
+    if name:
+        try:
+            visitor = Visitor.objects.get(name= name)
+            logger.debug(f"session_query: {name}:{visitor.pin}")
+
+            # Check for any requested updates
+            if 'new_avatar' in kwargs:
+                visitor.avatar = kwargs['new_avatar']
+                visitor.save()
+
+            return (name, visitor.pin, visitor.avatar.url)
+        except:
+            logger.debug(f"session_query: Exception:'{sys.exc_info()[0]}'")
+
+    return (None, None, None)
+
+# -----------------------------------------------------
+
+class PostDetailView(DetailView):
     template_name = 'blog/post/detail.html'
-    form_class = EmailPostForm
     model = Post
 
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        
+        post = self.object
+        comments = post.comments.filter(active=True)
+        others = Post.published.all() \
+                    .exclude(id=post.id) \
+                    .order_by("-created")[:6]
+
+        # Check for valid name and pin from session
+        visitor_name, visitor_pin, visitor_avatar = session_query(request)
+
+        if visitor_name:
+            visitor_form = VisitorForm(
+                            initial= { 
+                                'name': visitor_name, 
+                                'pin': visitor_pin, },
+                            prefix='visitor')
+        else:
+            visitor_form = VisitorForm(prefix='visitor')
+
+        context.update({
+            'email_form': EmailPostForm,
+            'visitor_form': visitor_form,
+            'others': others,
+            'comments': comments,
+            'avatars': refactor_list( get_avatar_files(), 5 ),
+            'visitor_avatar': visitor_avatar,
+            'valid_visitor': visitor_name,
+        })
+        return self.render_to_response(context)
+
     def post(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return HttpResponseForbidden()
+        logger.debug(f"POST request={request}")
+        post_data = request.POST or None
+        logger.debug(f"PostDetailView:post data= {post_data}")
         self.object = self.get_object()
         post = self.object
 
-        if 'add-comment' in request.POST:
-            form = CommentForm(data=request.POST)
-            form.instance.author = request.user
-            if form.is_valid():
-                # Create Comment obj but don't save to db
-                comment = form.save(commit=False)
-                # Assign current post to the comment
-                comment.post = post
-                # Save to db
-                comment.save()
-                logger.debug(f"Comment added to: {post}")
+        if 'comment-button' in request.POST:
+            visitor_form = VisitorForm(post_data, prefix='visitor') 
+            self.add_comment(request, visitor_form)
         elif 'send-email' in request.POST:
             form = EmailPostForm(request.POST)
             if form.is_valid():
@@ -74,73 +120,7 @@ class PostFormView(SingleObjectMixin, TemplateView):
                 #send_mail(subject, message, 'microsnout@bell.net', [cd['you']])
                 logger.debug(f"Send mail: {subject}")
 
-        return super().post(request, *args, **kwargs)
-
-    def get_success_url(self):
-        return reverse('blog:detail', kwargs=self.kwargs)
-
-class PostDetailView(DetailView):
-    template_name = 'blog/post/detail.html'
-    model = Post
-
-    def post(self, request, *args, **kwargs):
-        post_data = request.POST or None
-        logger.debug(f"PostDetailView:post data= {post_data}")
-        self.object = self.get_object()
-
-        if 'comment-button' in request.POST:
-            visitor_form = VisitorForm(post_data, prefix='visitor') 
-            self.add_comment(request, visitor_form)
-            return HttpResponseRedirect(request.path)
-
-        post = self.object
-        others = Post.published.all() \
-                    .exclude(id=post.id) \
-                    .order_by("-created")[:6]
-        comments = post.comments.filter(active=True)
-        context = self.get_context_data(object=self.object)
-
-        # Check for valid name and pin from session
-        visitor_name = request.session.get('Visitor', False)
-        logger.debug(f"PostDetailView:post found session name: '{visitor_name}'")
-        visitor_avatar = None
-        valid_visitor = None
-        if visitor_name:
-            try:
-                visitor = Visitor.objects.get(name= visitor_name)
-                visitor_pin = visitor.pin
-                visitor_avatar = visitor.avatar.url
-                valid_visitor = visitor_name
-                logger.debug(f"PostDetailView:post found pin: '{visitor_pin}'")
-            except:
-                visitor_pin = None
-                logger.debug(f"PostDetailView:post Exception:'{sys.exc_info()[0]}'")
-            finally:
-                if visitor_pin:
-                    visitor_form = VisitorForm(
-                                    initial= { 
-                                        'name': visitor_name, 
-                                        'pin': visitor_pin, },
-                                    prefix='visitor')
-                else:
-                    visitor_form = VisitorForm(prefix='visitor')
-        else:
-            visitor_form = VisitorForm(prefix='visitor')
-
-        context.update({
-            'email_form': EmailPostForm,
-            'visitor_form': visitor_form,
-            'others': others,
-            'comments': comments,
-            'avatars': refactor_list( get_avatar_files(), 5 ),
-            'visitor_avatar': visitor_avatar,
-            'valid_visitor': valid_visitor,
-        })
-        return self.render_to_response(context)
-
-    def get(self, request, *args, **kwargs):
-        logger.debug(f"GET request={request}")
-        return self.post(request, *args, **kwargs)
+        return HttpResponseRedirect(request.path)
     
     def add_comment(self, request, form):
         if form.is_valid():
@@ -168,6 +148,7 @@ class PostDetailView(DetailView):
         else:
             logger.debug("HomeView: visitor form NOT valid")
 
+# -----------------------------------------------------
     
 @require_POST
 def visitor_query(request):
@@ -185,6 +166,8 @@ def visitor_query(request):
             pin_match = (pin == visitor.pin)
             logger.debug(f"Pin match: [{pin_match}]")
             if pin_match:
+                # Remember valid user name in session
+                request.session['Visitor'] = name
                 return JsonResponse({'status': 'Match', 'avatar_url': visitor.avatar.url})
             else:
                 return JsonResponse({'status': 'Found'})
@@ -195,24 +178,33 @@ def visitor_query(request):
 
     return JsonResponse({'status':'Null'})
 
+# -----------------------------------------------------
+
 @require_POST
 def avatar_select(request, *args, **kwargs):
     logger.debug(f"avatar_select: {kwargs}")
 
     # Check for valid name and pin from session
-    visitor_name = request.session.get('Visitor', False)
-    logger.debug(f"avatar_select: found session name: '{visitor_name}'")
-    if visitor_name:
-        try:
-            visitor = Visitor.objects.get(name= visitor_name)
-            visitor.avatar = kwargs['file']
-            visitor.save()
-        except:
-            logger.debug(f"avatar_select: Exception:'{sys.exc_info()[0]}'")
+    visitor_name, visitor_pin, visitor_avatar = session_query(
+        request,
+        new_avatar= kwargs['file'])
 
     return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
 
-# *****
+@require_GET
+def delete_comment(request, *args, **kwargs):
+    logger.debug(f"delete_comment: {kwargs}")
+
+    try:
+        comment = Comment.objects.get(pk= kwargs['pk'])
+        logger.debug(f"delete_comment: {comment}")
+        comment.delete()
+    except:
+        logger.debug(f"session_query: Exception:'{sys.exc_info()[0]}'")
+
+    return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
+
+# -----------------------------------------------------
 
 def add_email_modal(request, post, context):
     if request.method == 'POST' and \
@@ -242,12 +234,15 @@ def add_email_modal(request, post, context):
             'form': form
         })
 
+# -----------------------------------------------------
 
 class PostIndexView(ListView):
     queryset = Post.published.all()
     context_object_name = 'posts'
     paginate_by = 3
     template_name = 'blog/post/index.html'
+
+# -----------------------------------------------------
 
 def share(request, post_id):
     post = get_object_or_404(Post, id=post_id, status='published')

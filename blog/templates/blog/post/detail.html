@@ -40,7 +40,7 @@
                             <span class="is-size-7">{{ comment.created }}</span>
                             {{ comment.body|linebreaks }}
                             {% if valid_visitor == comment.visitor.name %}
-                            <a href="" class="delete is-small"></a>
+                            <a href="/blog/delete_comment/{{ comment.pk }}" class="delete is-small"></a>
                             {% endif %}
                         </div>
                     </div>
@@ -56,7 +56,7 @@
                                         <img id="id_visitor-avatar" src="{{ visitor_avatar }}" alt=".">
                                     </div>
                                     <div class="">
-                                    <a id="id_avatar-change" onclick="openTable()" style="font-size: 10px">Change</a>
+                                    <a id="id_avatar-change" onclick="openAvatarTable()" style="font-size: 10px">Change</a>
                                     </div>
                                 </div>
                                 {% endif %}
@@ -187,7 +187,7 @@
         function closeModal() {
             document.querySelector(".bg-modal").style.display="none";
         }
-        function openTable() {
+        function openAvatarTable() {
             document.querySelector("#id_avatar-table").style.display="flex";
         }
     </script>
