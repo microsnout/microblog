@@ -7,19 +7,18 @@
         <div class="column">
             <div class="p-2">
                 <div class="p-0">
-                    <p class="mb-0">
-                    <strong>{{ post.title }}</strong>
+                    <p class="mb-0 has-text-info has-text-weight-bold">
+                    {{ post.title }}
                     <br>
                     <p class="mb-2 is-size-7">
                         Published {{ post.publish }} by {{ post.author }}
                     </p>
                     {{ post.body|linebreaks }}
-                    <br>
-                    <small>
-                        <a>Like</a> 
-                        <a href="{% url 'blog:share' post.id %}">Share</a>
-                        <a onclick="openModal()">Email</a>
-                    </small>
+                    <div class="mb-3">
+                        <a style="font-size: 12px" class="pr-3">Like</a> 
+                        <a style="font-size: 12px" class="pr-3" href="{% url 'blog:share' post.id %}">Share</a>
+                        <a style="font-size: 12px" onclick="openModal()">Email</a>
+                    </div>
                     </p>
                     {% with comments.count as total_comments %}
                         <p>
@@ -47,7 +46,7 @@
                 {% empty %}
                     <p>There are no comments yet.</p>
                 {% endfor %}
-                    <div class="my-3 p-3" style="border: 1px solid hsl(204,86%,53%);">
+                    <div class="my-4 p-3" style="border: 1px solid hsl(204,86%,53%);">
                         <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
                             <div class="is-flex">
                                 {% if visitor_avatar %}

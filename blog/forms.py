@@ -18,4 +18,7 @@ class VisitorForm(forms.Form):
     name = forms.CharField(
             max_length=30)
     pin = forms.CharField(
-            max_length=6)
+            max_length=6,
+            widget=forms.TextInput(attrs={
+                        'type': 'text',
+            }))
