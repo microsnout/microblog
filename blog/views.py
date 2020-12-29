@@ -71,7 +71,7 @@ class PostDetailView(DetailView):
         comments = post.comments.filter(active=True)
         others = Post.published.all() \
                     .exclude(id=post.id) \
-                    .order_by("-created")[:6]
+                    .order_by("-created")[:8]
 
         # Check for valid name and pin from session
         visitor_name, visitor_pin, visitor_avatar = session_query(request)

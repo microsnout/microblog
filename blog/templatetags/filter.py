@@ -1,7 +1,10 @@
 import hashlib
 import urllib
+import re
 from django import template
 from django.utils.safestring import mark_safe
+from django.utils.html import linebreaks
+import markdown
  
 register = template.Library()
  
@@ -18,3 +21,9 @@ def gravatar_url(email, size=40):
 def gravatar(email, size=40):
     url = gravatar_url(email, size)
     return mark_safe('<img src="%s" height="%d" width="%d">' % (url, size, size))
+
+# -----------------------------------------------------------------------------------
+
+@register.filter(name='markdown')
+def markdown_filter(text):
+  return mark_safe(markdown.markdown(text))

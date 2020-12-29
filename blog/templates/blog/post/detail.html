@@ -7,13 +7,15 @@
         <div class="column">
             <div class="p-2">
                 <div class="p-0">
-                    <p class="mb-0 has-text-info has-text-weight-bold">
+                    <div class="mb-0 has-text-info has-text-weight-bold is-size-2">
                     {{ post.title }}
-                    <br>
-                    <p class="mb-2 is-size-7">
+                    </div>
+                    <div class="mb-2 pt-0 is-size-7">
                         Published {{ post.publish }} by {{ post.author }}
-                    </p>
-                    {{ post.body|linebreaks }}
+                    </div>
+                    <div class="content is-small">
+                        {{ post.body|markdown }}
+                    </div>
                     <div class="mb-3">
                         <a style="font-size: 12px" class="pr-3">Like</a> 
                         <a style="font-size: 12px" class="pr-3" href="{% url 'blog:share' post.id %}">Share</a>
@@ -30,9 +32,9 @@
                 {% for comment in comments %}
                     <div class="media">
                         <figure class="media-left">
-                            <p class="image is-32x32">
+                            <div class="image is-32x32">
                                 <img src="{{ comment.visitor.avatar.url }}">
-                            </p>
+                            </div>
                         </figure>
                         <div class="media-content">
                             <strong>{{ comment.visitor.name }}</strong>
