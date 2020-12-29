@@ -10,7 +10,7 @@
                     <div class="mb-0 has-text-info has-text-weight-bold is-size-2">
                     {{ post.title }}
                     </div>
-                    <div class="mb-2 pt-0 is-size-7">
+                    <div class="mb-2 is-size-7">
                         Published {{ post.publish }} by {{ post.author }}
                     </div>
                     <div class="content is-small">
@@ -37,7 +37,7 @@
                             </div>
                         </figure>
                         <div class="media-content">
-                            <strong>{{ comment.visitor.name }}</strong>
+                            <a href="/blog/{{ comment.visitor.pk }}/visitor">{{ comment.visitor.name }}</a>
                             <span class="is-size-7">{{ comment.created }}</span>
                             {{ comment.body|linebreaks }}
                             {% if valid_visitor == comment.visitor.name %}
@@ -127,20 +127,20 @@
         </div>
         <div id="recent-posts" class="column is-narrow">
             <div class="box" style="width: 180px">
-                <p class="mb-2 has-text-grey-light">Recent Posts</p>
-            {% for pub in others %}
+                <div class="mb-2 has-text-grey-light">Recent Posts</div>
+                {% for pub in others %}
                 <div>
-                <p class="is-size-7">
-                    <a href="{{ pub.get_absolute_url }}">
-                    {{ pub.title }}
-                    </a>
-                </p>
-                <p class="has-text-weight-light" style="font-size: 12px">
-                    {{ pub.publish }}
-                </p>
-                <hr class="my-3">
+                    <div class="is-size-7">
+                        <a href="{{ pub.get_absolute_url }}">
+                        {{ pub.title }}
+                        </a>
+                    </div>
+                    <div class="has-text-weight-light" style="font-size: 12px">
+                        {{ pub.publish }}
+                    </div>
+                    <hr class="my-3">
                 </div>
-            {% endfor %}
+                {% endfor %}
             </div>
         </div>
     </div>

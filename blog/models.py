@@ -64,6 +64,10 @@ class Visitor(models.Model):
     def __str__(self):
         return self.name + ':' + self.pin
 
+    def get_absolute_url(self):
+        return reverse('blog:visitor',
+                       args=[self.pk,])
+
 class Comment (models.Model):
     post = models.ForeignKey(
                     Post,

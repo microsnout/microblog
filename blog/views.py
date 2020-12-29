@@ -38,6 +38,7 @@ def refactor_list( list, n ):
 # -----------------------------------------------------
     
 def session_query(request, **kwargs):
+    ''' Look for last visitor name in session data and lookup in db '''
     name = request.session.get('Visitor', False)
     logger.debug(f"session_query: name=({name})")
 
@@ -60,6 +61,7 @@ def session_query(request, **kwargs):
 # -----------------------------------------------------
 
 class PostDetailView(DetailView):
+    ''' Detailed view of single post along with comments and recent post sidebar '''
     template_name = 'blog/post/detail.html'
     model = Post
 
@@ -90,7 +92,7 @@ class PostDetailView(DetailView):
             'visitor_form': visitor_form,
             'others': others,
             'comments': comments,
-            'avatars': refactor_list( get_avatar_files(), 5 ),
+            'avatars': refactor_list( get_avatar_files(), 8 ),
             'visitor_avatar': visitor_avatar,
             'valid_visitor': visitor_name,
         })
@@ -152,6 +154,7 @@ class PostDetailView(DetailView):
     
 @require_POST
 def visitor_query(request):
+    ''' AJAX function called by events for visitor name and pin '''
     name = request.POST.get('name')
     pin = request.POST.get('pin')
 
@@ -182,6 +185,7 @@ def visitor_query(request):
 
 @require_POST
 def avatar_select(request, *args, **kwargs):
+    ''' Called by avatar buttons in dropdown menu to choose image '''
     logger.debug(f"avatar_select: {kwargs}")
 
     # Check for valid name and pin from session
@@ -237,9 +241,10 @@ def add_email_modal(request, post, context):
 # -----------------------------------------------------
 
 class PostIndexView(ListView):
+    ''' Index/List view of all published posts '''
     queryset = Post.published.all()
     context_object_name = 'posts'
-    paginate_by = 3
+    paginate_by = 5
     template_name = 'blog/post/index.html'
 
 # -----------------------------------------------------
@@ -267,3 +272,25 @@ def share(request, post_id):
                   {'post': post,
                    'form': form,
                    'sent': sent})
+                   
+# -----------------------------------------------------
+
+class VisitorDetailView(DetailView):
+    template_name = 'blog/visitor/detail.html'
+    model = Visitor
+    
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        visitor = self.object
+
+        comments = Comment.objects.filter(visitor=visitor)
+        recent = Visitor.objects.all() \
+                    .exclude(id=visitor.id) \
+                    .order_by("-last_visit")[:8]
+
+        context.update({
+            'comments': comments,
+            'recent': recent,
+        })
+        return self.render_to_response(context)

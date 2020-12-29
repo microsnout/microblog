@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load filter %}
+
+{% block content %}
+<section class="section py-2">
+    <div class="columns">
+        <div class="column">
+            <div class="box">
+                <div class="is-flex">
+                    <div class="image is-32x32 mr-4">
+                        <img src="{{ visitor.avatar.url }}" alt=".">
+                    </div>
+                    <div class="block my-0 py-0">
+                        <div class="is-size-7 has-text-weight-bold">Visitor:</div>
+                        {% if user.is_staff %}
+                        &lsquo;{{ visitor.name }}&lsquo;&nbsp;-&nbsp;{{ visitor.pin }}
+                        {% else %}
+                        &lsquo;{{ visitor.name }}&lsquo;
+                        {% endif %}
+                    </div>
+                    <div class="block ml-6">
+                        <div class="is-size-7 has-text-weight-bold">Last visit:</div>
+                        <div class="is-size-6">{{ visitor.last_visit }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="block">
+                {% for comment in comments %}
+                <div class="box p-1">
+                    <div class="block">
+                        <div class="is-size-7">{{ comment.created }}</div>
+                        <div>About:&nbsp; 
+                            <a class="" href="{{ comment.post.get_absolute_url }}">{{ comment.post.title }}</a>
+                        </div>
+                        <div class="is-size-7 has-text-weight-bold">"{{ comment.body|truncatewords:50 }}"</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div id="recent-visitors" class="column is-narrow">
+            <div class="box" style="width: 180px">
+                <div class="mb-2 has-text-grey-light">Recent Visitors</div>
+                {% for visit in recent %}
+                <div>
+                    <div class="is-size-7">
+                        <a href="{{ visit.get_absolute_url }}">
+                        {{ visit.name }}
+                        </a>
+                    </div>
+                    <div class="has-text-weight-light" style="font-size: 12px">
+                        {{ visitor.last_visit }}
+                    </div>
+                    <hr class="my-3">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block domready %}
+{% endblock %}
