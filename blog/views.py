@@ -284,7 +284,7 @@ class VisitorDetailView(DetailView):
         context = self.get_context_data(object=self.object)
         visitor = self.object
 
-        comments = Comment.objects.filter(visitor=visitor)
+        comments = Comment.objects.filter(visitor=visitor).order_by("-created")
         recent = Visitor.objects.all() \
                     .exclude(id=visitor.id) \
                     .order_by("-last_visit")[:8]
