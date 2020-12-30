@@ -4,9 +4,21 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django.utils.deconstruct import deconstructible
 import os
 import pdb
+from urllib.parse import urljoin
 
+@deconstructible
+class MyFileSystemStorage(FileSystemStorage):
+    def __init__(self, subdir):
+        self.subdir = subdir
+        super(MyFileSystemStorage, self).__init__(
+                location=os.path.join(settings.MEDIA_ROOT, self.subdir), 
+                base_url=urljoin(settings.MEDIA_URL, self.subdir))
+
+    def __eq__(self, other):
+        return self.subdir == other.subdir
 
 class PublishedManager(models.Manager):
     def get_queryset(self):
@@ -28,15 +40,19 @@ class Blog(models.Model):
                               choices=STATUS_CHOICES,
                               default='offline')
     banner = models.ImageField(
-                upload_to='images/banners/',
-                blank=True,
-                default='',
-                storage=FileSystemStorage(
-                            location=settings.MEDIA_BANNER_FILES,
-                            base_url=settings.MEDIA_BANNER_URL))
+                upload_to= 'images/banners/',
+                blank= True,
+                default= '',
+                storage= MyFileSystemStorage('images/banners/'))
     description = models.CharField(max_length=500)
     created = models.DateTimeField(auto_now_add=True)
     last_post = models.DateTimeField(null=True)
+
+    class Meta:
+        ordering = ("-created",)
+
+    def __str__(self):
+        return self.title
 
     def update_last_post(self):
         self.last_post = timezone.now()
@@ -54,6 +70,9 @@ class Post(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE,
                               related_name='blog_posts')
+    blog = models.ForeignKey( Blog,
+                              on_delete=models.CASCADE,
+                              related_name='posts')
     body = models.TextField()
     publish = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
@@ -82,11 +101,9 @@ class Visitor(models.Model):
     pin = models.CharField(max_length=6)
     last_visit = models.DateTimeField(auto_now=True)
     avatar = models.ImageField(
-                upload_to='images/avatars/',
-                storage=FileSystemStorage(
-                            location=settings.MEDIA_AVATAR_FILES,
-                            base_url=settings.MEDIA_AVATAR_URL),
-                default="SeekPng.com_avatar-png_1150362.png")
+                upload_to= 'images/avatars/',
+                storage= MyFileSystemStorage('images/avatars/'),
+                default= "SeekPng.com_avatar-png_1150362.png")
 
     class Meta:
         ordering = ('-last_visit',)
