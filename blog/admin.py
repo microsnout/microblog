@@ -1,5 +1,14 @@
 from django.contrib import admin
-from .models import Post, Comment, Visitor
+from .models import Blog, Post, Comment, Visitor
+
+@admin.register(Blog)
+class BlogAdmin(admin.ModelAdmin):
+    list_display = ('title', 'slug', 'owner', 'status', 'banner', 'description')
+    list_filter = ('status', 'owner')
+    search_fields = ('title', 'description')
+    prepopulated_fields = { 'slug': ('title',)}
+    date_hierarchy = 'created'
+    ordering = ('owner', 'status', 'title')
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):

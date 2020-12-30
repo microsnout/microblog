@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
 from .forms import EmailPostForm, VisitorForm
-from .models import Post, Comment, Visitor
+from .models import Blog, Post, Comment, Visitor
 
 import sys
 import os
