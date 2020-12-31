@@ -5,7 +5,7 @@ from .views import PostIndexView, PostDetailView, VisitorDetailView
 app_name = 'blog'
 
 urlpatterns = [
-    path('', views.PostIndexView.as_view(), name='index'),
+    path('index/<int:blog_id>/<slug:slug>/', views.PostIndexView.as_view(), name='index'),
     path('<int:year>/<int:month>/<int:day>/<slug:slug>/',
         PostDetailView.as_view(),
         name='detail'),

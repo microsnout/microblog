@@ -13,13 +13,45 @@
                     <div class="mb-2 is-size-7">
                         Published {{ post.publish }} by {{ post.author }}
                     </div>
-                    <div class="content is-small" contenteditable="true">
+                    <div class="content is-small">
                         {{ post.body|markdown }}
                     </div>
-                    <div class="mb-3">
-                        <a style="font-size: 12px" class="pr-3">Like</a> 
-                        <a style="font-size: 12px" class="pr-3" href="{% url 'blog:share' post.id %}">Share</a>
-                        <a style="font-size: 12px" onclick="openModal()">Email</a>
+                    <div class="level">
+                        <div class="level-left mb-3">
+                            <div class="level-item"><a style="font-size: 12px" class="pr-3">Like</a></div> 
+                            <div class="level-item"><a style="font-size: 12px" class="pr-3" href="{% url 'blog:share' post.id %}">Share</a></div>
+                            <div class="level-item"><a style="font-size: 12px" onclick="openModal()">Email</a></div>
+                        </div>
+                        {% if user.is_staff %}
+                        <div class="level-right mb-3">
+                            <div class="level-item">
+                                <div class="dropdown is-hoverable">
+                                    <div class="dropdown-trigger">
+                                            <a style="font-size: 12px;" class="">&laquo;Admin&raquo;</a>
+                                    </div>
+                                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                                        <div class="dropdown-content">
+                                            <a href="#" class="dropdown-item">Edit</a>
+                                            <a href="#" class="dropdown-item">Delete</a>
+                                            <hr class="dropdown-divider">
+                                            <p class="pl-2 is-size-7 has-text-weight-bold">Status:</p>
+                                            <a href="#" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                                            - Draft -</a>
+                                            <a href="#" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                                            - Published -</a>
+                                            <hr class="dropdown-divider">
+                                            <p class="pl-2 is-size-7 has-text-weight-bold">Move to:</p>
+                                            {% for blog in blogs %}
+                                            <a href="#" class="dropdown-item py-1 has-text-weight-bold" style="font-size: 10px">
+                                                &ldquo;{{ blog.title|truncatechars:28 }}&rdquo;
+                                            </a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                     </p>
                     {% with comments.count as total_comments %}

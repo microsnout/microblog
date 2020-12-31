@@ -74,6 +74,8 @@ class PostDetailView(DetailView):
         others = Post.published.all() \
                     .exclude(id=post.id) \
                     .order_by("-created")[:8]
+        blogs = Blog.objects.all() \
+                    .exclude(id=post.blog.id)
 
         # Check for valid name and pin from session
         visitor_name, visitor_pin, visitor_avatar = session_query(request)
@@ -95,6 +97,7 @@ class PostDetailView(DetailView):
             'avatars': refactor_list( get_avatar_files(), 8 ),
             'visitor_avatar': visitor_avatar,
             'valid_visitor': visitor_name,
+            'blogs': blogs,
         })
         return self.render_to_response(context)
 
@@ -242,10 +245,14 @@ def add_email_modal(request, post, context):
 
 class PostIndexView(ListView):
     ''' Index/List view of all published posts '''
-    queryset = Post.published.all()
     context_object_name = 'posts'
     paginate_by = 5
     template_name = 'blog/post/index.html'
+
+    def get_queryset(self):
+        ''' Just published posts belonging to specified blog '''
+        return Post.published.filter(blog=self.kwargs['blog_id'])
+    
 
 # -----------------------------------------------------
 
