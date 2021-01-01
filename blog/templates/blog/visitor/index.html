@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Visitor List
+{% endblock title %}
+
+{% block subtitle %}
+{% endblock subtitle %}
+
+{% block content %}
+    <div class="media-content p-5">
+    {% for visitor in visitors %}
+        <div class="media">
+            <figure class="media-left">
+                <div class="image is-32x32">
+                    <img src="{{ visitor.avatar.url }}">
+                </div>
+            </figure>
+            <div class='media-content mb-0'>
+                <div class="is-size-7">
+                    <a class="is-size-6" href="{{ visitor.get_absolute_url }}">{{ visitor.name }}</a>
+                        &nbsp;-&nbsp;
+                        Pin:&nbsp;{{ visitor.pin }}
+                </div>
+                <p class="mb-1 is-size-7">
+                Last visit: {{ visitor.last_visit }}
+                </p>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+    {% include "pagination.html" with page=page_obj %}
+{% endblock %}

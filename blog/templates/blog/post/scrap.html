@@ -12,3 +12,5 @@
                             <div class="level-item"><a style="font-size: 12px" class="pr-3">Status</a></div> 
                             <div class="level-item"><a style="font-size: 12px" class="pr-3">Edit</a></div>
                             <div class="level-item"><a style="font-size: 12px" class="pr-3">Delete</a></div>
+                            <a href="{% url 'blog:visitor' blog_id=blog.id pk=comment.visitor.id %}">{{ comment.visitor.name }}</a>
+                            <a href="{% url 'blog:visitor' blog_id=blog.id pk=comment.visitor.id %}">{{ comment.visitor.name }}</a>

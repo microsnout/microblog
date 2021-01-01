@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% load filter %}
 
+{% block title %}
+Visitor:&nbsp;{{ visitor.name }}
+{% endblock title %}
+
+{% block subtitle %}
+Last visit:&nbsp;{{ visitor.last_visit }}
+{% endblock subtitle %}
+
 {% block content %}
 <section class="section py-2">
     <div class="columns">
@@ -31,6 +39,9 @@
                         <div class="is-size-7">{{ comment.created }}</div>
                         <div>About:&nbsp; 
                             <a class="" href="{{ comment.post.get_absolute_url }}">{{ comment.post.title }}</a>
+                        </div>
+                        <div>Blog:&nbsp; 
+                            <a class="" href="{{ comment.post.blog.get_absolute_url }}">{{ comment.post.blog.title }}</a>
                         </div>
                         <div class="is-size-7 has-text-weight-bold">"{{ comment.body|truncatewords:50 }}"</div>
                     </div>

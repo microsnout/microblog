@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% load filter %}
 
+{% block title %}
+{{ post.blog.title }}
+{% endblock title %}
+
+{% block subtitle %}
+{{ post.blog.description }}
+{% endblock subtitle %}
+
 {% block content %}
 <section class="section py-2">
     <div class="columns">
@@ -32,17 +40,16 @@
                                     <div class="dropdown-menu" id="dropdown-menu" role="menu">
                                         <div class="dropdown-content">
                                             <a href="#" class="dropdown-item">Edit</a>
-                                            <a href="#" class="dropdown-item">Delete</a>
                                             <hr class="dropdown-divider">
                                             <p class="pl-2 is-size-7 has-text-weight-bold">Status:</p>
-                                            <a href="#" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
-                                            - Draft -</a>
-                                            <a href="#" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
-                                            - Published -</a>
+                                            {% for status in post.status_values %}
+                                            <a href="{% url 'blog:set_status' post_id=post.id new_status=status %}" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                                            -&nbsp;{{ status|title }}&nbsp;-</a>
+                                            {% endfor %}
                                             <hr class="dropdown-divider">
-                                            <p class="pl-2 is-size-7 has-text-weight-bold">Move to:</p>
+                                            <p class="pl-2 is-size-7 has-text-weight-bold">Move post to:</p>
                                             {% for blog in blogs %}
-                                            <a href="#" class="dropdown-item py-1 has-text-weight-bold" style="font-size: 10px">
+                                            <a href="{% url 'blog:move_post_to' post_id=post.id blog_id=blog.id %}" class="dropdown-item py-1 has-text-weight-bold" style="font-size: 10px">
                                                 &ldquo;{{ blog.title|truncatechars:28 }}&rdquo;
                                             </a>
                                             {% endfor %}
@@ -69,7 +76,7 @@
                             </div>
                         </figure>
                         <div class="media-content">
-                            <a href="/blog/{{ comment.visitor.pk }}/visitor">{{ comment.visitor.name }}</a>
+                            <a href="/blog/visitor/{{ comment.visitor.id }}">{{ comment.visitor.name }}</a>
                             <span class="is-size-7">{{ comment.created }}</span>
                             {{ comment.body|linebreaks }}
                             {% if valid_visitor == comment.visitor.name %}

@@ -10,6 +10,10 @@ from .models import Blog, Post, Comment, Visitor
 import sys
 import os
 import os.path
+import inspect
+
+# For exceptions only - slow
+thisfunc = lambda: inspect.stack()[1][3]
 
 # For adding AJAX 
 from django.http import JsonResponse
@@ -70,12 +74,13 @@ class PostDetailView(DetailView):
         context = self.get_context_data(object=self.object)
         
         post = self.object
+        blog = post.blog
         comments = post.comments.filter(active=True)
         others = Post.published.all() \
                     .exclude(id=post.id) \
                     .order_by("-created")[:8]
         blogs = Blog.objects.all() \
-                    .exclude(id=post.blog.id)
+                    .exclude(id=blog.id)
 
         # Check for valid name and pin from session
         visitor_name, visitor_pin, visitor_avatar = session_query(request)
@@ -98,6 +103,7 @@ class PostDetailView(DetailView):
             'visitor_avatar': visitor_avatar,
             'valid_visitor': visitor_name,
             'blogs': blogs,
+            'blog': blog,
         })
         return self.render_to_response(context)
 
@@ -211,6 +217,34 @@ def delete_comment(request, *args, **kwargs):
 
     return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
 
+@require_GET
+def move_post_to(request, *args, **kwargs):
+    logger.debug(f"move_post_to: {kwargs}")
+
+    try:
+        post = Post.objects.get(pk= kwargs['post_id'])
+        blog = Blog.objects.get(pk= kwargs['blog_id'])
+        post.blog = blog
+        post.save()
+        blog.update_last_post()
+    except:
+        logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+
+    return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
+
+@require_GET
+def set_status(request, *args, **kwargs):
+    logger.debug(f"set_status: {kwargs}")
+
+    try:
+        post = Post.objects.get(pk= kwargs['post_id'])
+        post.status = kwargs['new_status']
+        post.save()
+    except:
+        logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+
+    return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
+
 # -----------------------------------------------------
 
 def add_email_modal(request, post, context):
@@ -248,6 +282,14 @@ class PostIndexView(ListView):
     context_object_name = 'posts'
     paginate_by = 5
     template_name = 'blog/post/index.html'
+
+    def get_context_data (self, ** kwargs):
+        context = super(ListView, self).get_context_data(** kwargs)
+        try:
+            context ['blog'] = Blog.objects.get(id=self.kwargs['blog_id'])
+        except:
+            logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+        return context
 
     def get_queryset(self):
         ''' Just published posts belonging to specified blog '''
@@ -301,3 +343,14 @@ class VisitorDetailView(DetailView):
             'recent': recent,
         })
         return self.render_to_response(context)
+
+class VisitorListView(ListView):
+    ''' Index/List view of all visitors to all blogs '''
+    context_object_name = 'visitors'
+    paginate_by = 10
+    template_name = 'blog/visitor/index.html'
+
+    def get_queryset(self):
+        ''' Just published posts belonging to specified blog '''
+        return Visitor.objects.all()
+    

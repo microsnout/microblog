@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.utils.deconstruct import deconstructible
+from model_utils import Choices
 import os
 import pdb
 from urllib.parse import urljoin
@@ -25,11 +26,8 @@ class PublishedManager(models.Manager):
         return super().get_queryset().filter(status='published')
 
 class Blog(models.Model):
-    STATUS_CHOICES = (
-        ('dormant', 'Dormant'),
-        ('offline', 'Offline'),
-        ('online', 'Online'),
-    )
+    STATUS = Choices( 'dormant', 'offline', 'online' )
+    status_values = [v[0] for v in STATUS]
 
     title = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100)
@@ -37,7 +35,7 @@ class Blog(models.Model):
                             on_delete=models.CASCADE,
                             related_name='blogs')
     status = models.CharField(max_length=10,
-                              choices=STATUS_CHOICES,
+                              choices=STATUS,
                               default='offline')
     banner = models.ImageField(
                 upload_to= 'images/banners/',
@@ -54,16 +52,19 @@ class Blog(models.Model):
     def __str__(self):
         return self.title
 
+    def get_absolute_url(self):
+        return reverse('blog:index',
+                       args=[self.id, self.slug])
+
     def update_last_post(self):
         self.last_post = timezone.now()
         self.save()
 
 
 class Post(models.Model):
-    STATUS_CHOICES = (
-        ('draft', 'Draft'),
-        ('published', 'Published'),
-    )
+    STATUS = Choices( 'draft', 'published', 'deleted' )
+    status_values = [v[0] for v in STATUS]
+
     title = models.CharField(max_length=250)
     slug = models.SlugField(max_length=250,
                             unique_for_date='publish')
@@ -78,7 +79,7 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10,
-                              choices=STATUS_CHOICES,
+                              choices=STATUS,
                               default='draft')
 
     objects = models.Manager() # The default manager.

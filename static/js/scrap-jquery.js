@@ -13,7 +13,7 @@ $(document).ready(function() {
                     // No name or less than minimum length
                     $('#id_visitor-name').css('color', 'grey');
                     $('#id_visitor-pin').css('color', 'grey');
-                    $('#id_visitor-pin').prop('disabled', true);
+                    $('#id_visitor-pin').prop('readonly', false);
                     $('#visitor_name_help').html('- Enter name or userid -')
                     $('#visitor_pin_help').html('- Enter 1 to 6 digit pin -')
                     $('#id_comment-button').prop('disabled', true);
@@ -23,7 +23,7 @@ $(document).ready(function() {
                     // Name in db, pin match
                     $('#id_visitor-name').css('color', 'green');
                     $('#id_visitor-pin').css('color', 'green');
-                    $('#id_visitor-pin').prop('disabled', false);
+                    $('#id_visitor-pin').prop('readonly', true);
                     $('#visitor_name_help').html('- Name is validated -')
                     $('#visitor_pin_help').html('- Pin is valid -')
                     $('#id_comment-button').prop('disabled', false);
@@ -32,7 +32,7 @@ $(document).ready(function() {
                     // Name in db, invalid pin
                     $('#id_visitor-name').css('color', 'red');
                     $('#id_visitor-pin').css('color', 'grey');
-                    $('#id_visitor-pin').prop('disabled', false);
+                    $('#id_visitor-pin').prop('readonly', false);
                     $('#visitor_name_help').html('- Name is recognized -')
                     $('#visitor_pin_help').html('- Enter matching pin-')
                     $('#id_comment-button').prop('disabled', true);
@@ -41,7 +41,7 @@ $(document).ready(function() {
                     // Name is unrecognized but available
                     $('#id_visitor-name').css('color', 'grey');
                     $('#id_visitor-pin').css('color', 'grey');
-                    $('#id_visitor-pin').prop('disabled', false);
+                    $('#id_visitor-pin').prop('readonly', false);
                     $('#visitor_name_help').html('- New name is available -')
                     $('#visitor_pin_help').html('- Enter 1 to 6 digit pin -')
                     $('#id_comment-button').prop('disabled', false);
