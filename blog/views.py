@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, FormView, TemplateView
+from django.views.generic import ListView, DetailView, FormView, TemplateView, UpdateView
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
@@ -278,7 +278,7 @@ def add_email_modal(request, post, context):
 # -----------------------------------------------------
 
 class PostIndexView(ListView):
-    ''' Index/List view of all published posts '''
+    ''' Index/List view of all published posts for one blog '''
     context_object_name = 'posts'
     paginate_by = 5
     template_name = 'blog/post/index.html'
@@ -287,6 +287,7 @@ class PostIndexView(ListView):
         context = super(ListView, self).get_context_data(** kwargs)
         try:
             context ['blog'] = Blog.objects.get(id=self.kwargs['blog_id'])
+            context ['blogs'] = Blog.objects.all().exclude(id= context['blog'].id )
         except:
             logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
         return context
@@ -334,13 +335,13 @@ class VisitorDetailView(DetailView):
         visitor = self.object
 
         comments = Comment.objects.filter(visitor=visitor).order_by("-created")
-        recent = Visitor.objects.all() \
-                    .exclude(id=visitor.id) \
-                    .order_by("-last_visit")[:8]
+        recent = Visitor.objects.all().exclude(id=visitor.id).order_by("-last_visit")[:8]
+        blogs = Blog.objects.all()
 
         context.update({
             'comments': comments,
             'recent': recent,
+            'blogs': blogs,
         })
         return self.render_to_response(context)
 
@@ -350,7 +351,30 @@ class VisitorListView(ListView):
     paginate_by = 10
     template_name = 'blog/visitor/index.html'
 
+    def get_context_data (self, ** kwargs):
+        context = super(ListView, self).get_context_data(** kwargs)
+        try:
+            context ['blogs'] = Blog.objects.all()
+        except:
+            logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+        return context
+
+    def get_queryset(self):
+        ''' Just published posts belonging to specified blog '''
+        return Post.published.filter(blog=self.kwargs['blog_id'])
     def get_queryset(self):
         ''' Just published posts belonging to specified blog '''
         return Visitor.objects.all()
     
+class PostUpdateView(UpdateView):
+    model = Post
+    fields = ['status', 'title', 'body', ]
+    template_name = 'blog/post/edit.html'
+
+    def get_context_data (self, ** kwargs):
+        context = super(UpdateView, self).get_context_data(** kwargs)
+        try:
+            context ['blogs'] = Blog.objects.all()
+        except:
+            logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+        return context

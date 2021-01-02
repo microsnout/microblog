@@ -74,8 +74,17 @@
                     <div class="navbar-item has-dropdown is-hoverable">
                         <a class="navbar-item has-text-white px-2">&laquo;Admin&raquo;</a>
                         <div class="navbar-dropdown">
-                            <a class="navbar-item" href="/admin">Django Admin</a>
-                            <a class="navbar-item" href="{% url 'blog:visitor-list' %}">Visitor List</a>
+                            <a class="dropdown-item" href="/admin">Django Admin</a>
+                            <a class="dropdown-item" href="{% url 'blog:visitor-list' %}">Visitor List</a>
+                            <hr class="dropdown-divider">
+                            <p class="pl-2 is-size-7 has-text-weight-bold">Goto blog:</p>
+                            {% if blogs %}
+                                {% for blog in blogs %}
+                                    <a href="{% url 'blog:index' blog_id=blog.id slug=blog.slug %}" class="dropdown-item py-1 has-text-weight-bold" style="font-size: 10px">
+                                        &ldquo;{{ blog.title|truncatechars:28 }}&rdquo;
+                                    </a>
+                                {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
                     {% endif %}

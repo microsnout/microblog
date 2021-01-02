@@ -39,7 +39,7 @@
                                     </div>
                                     <div class="dropdown-menu" id="dropdown-menu" role="menu">
                                         <div class="dropdown-content">
-                                            <a href="#" class="dropdown-item">Edit</a>
+                                            <a href="{% url 'blog:edit-post' pk=post.id %}" class="dropdown-item">Edit</a>
                                             <hr class="dropdown-divider">
                                             <p class="pl-2 is-size-7 has-text-weight-bold">Status:</p>
                                             {% for status in post.status_values %}

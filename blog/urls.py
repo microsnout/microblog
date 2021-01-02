@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import PostIndexView, PostDetailView, VisitorDetailView, VisitorListView
+from .views import PostIndexView, PostDetailView, VisitorDetailView, VisitorListView, PostUpdateView
 
 app_name = 'blog'
 
@@ -15,4 +15,5 @@ urlpatterns = [
     path('move_post_to/<int:post_id>/<int:blog_id>', views.move_post_to, name='move_post_to'),
     path('set_status/<int:post_id>/<str:new_status>', views.set_status, name='set_status'),
     path('visitor_list/', views.VisitorListView.as_view(), name='visitor-list'),
+    path('edit_post/<int:pk>', views.PostUpdateView.as_view(), name='edit-post'),
 ]

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load filter %}
+
+{% block title %}
+{{ post.blog.title }}
+{% endblock title %}
+
+{% block subtitle %}
+{{ post.blog.description }}
+{% endblock subtitle %}
+
+{% block content %}
+<section class="section py-2">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Update">
+    </form>
+</section>
+{% endblock %}
+
+{% block domready %}
+{% endblock %}
