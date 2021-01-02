@@ -9,230 +9,229 @@
 {{ post.blog.description }}
 {% endblock subtitle %}
 
-{% block content %}
-<section class="section py-2">
-    <div class="columns">
-        <div class="column">
-            <div class="p-2">
-                <div class="p-0">
-                    <div class="mb-0 has-text-info has-text-weight-bold is-size-2">
-                    {{ post.title }}
-                    </div>
-                    <div class="mb-2 is-size-7">
-                        Published {{ post.publish }} by {{ post.author }}
-                    </div>
-                    <div class="content is-small">
-                        {{ post.body|markdown }}
-                    </div>
-                    <div class="level">
-                        <div class="level-left mb-3">
-                            <div class="level-item"><a style="font-size: 12px" class="pr-3">Like</a></div> 
-                            <div class="level-item"><a style="font-size: 12px" class="pr-3" href="{% url 'blog:share' post.id %}">Share</a></div>
-                            <div class="level-item"><a style="font-size: 12px" onclick="openModal()">Email</a></div>
+{% block main %}
+<div class="p-2">
+    <div class="p-0">
+        <div class="mb-0 has-text-info has-text-weight-bold is-size-2">
+        {{ post.title }}
+        </div>
+        <div class="mb-2 is-size-7">
+            Published {{ post.publish }} by {{ post.author }}
+        </div>
+        <div class="content is-small">
+            {{ post.body|markdown }}
+        </div>
+        <div class="level">
+            <div class="level-left mb-3">
+                <div class="level-item"><a style="font-size: 12px" class="pr-3">Like</a></div> 
+                <div class="level-item"><a style="font-size: 12px" class="pr-3" href="{% url 'blog:share' post.id %}">Share</a></div>
+                <div class="level-item"><a style="font-size: 12px" onclick="openModal()">Email</a></div>
+            </div>
+            {% if user.is_staff %}
+            <div class="level-right mb-3">
+                <div class="level-item">
+                    <div class="dropdown is-hoverable">
+                        <div class="dropdown-trigger">
+                                <a style="font-size: 12px;" class="">&laquo;Admin&raquo;</a>
                         </div>
-                        {% if user.is_staff %}
-                        <div class="level-right mb-3">
-                            <div class="level-item">
-                                <div class="dropdown is-hoverable">
-                                    <div class="dropdown-trigger">
-                                            <a style="font-size: 12px;" class="">&laquo;Admin&raquo;</a>
-                                    </div>
-                                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                                        <div class="dropdown-content">
-                                            <a href="{% url 'blog:edit-post' pk=post.id %}" class="dropdown-item">Edit</a>
-                                            <hr class="dropdown-divider">
-                                            <p class="pl-2 is-size-7 has-text-weight-bold">Status:</p>
-                                            {% for status in post.status_values %}
-                                            <a href="{% url 'blog:set_status' post_id=post.id new_status=status %}" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
-                                            -&nbsp;{{ status|title }}&nbsp;-</a>
-                                            {% endfor %}
-                                            <hr class="dropdown-divider">
-                                            <p class="pl-2 is-size-7 has-text-weight-bold">Move post to:</p>
-                                            {% for blog in blogs %}
-                                            <a href="{% url 'blog:move_post_to' post_id=post.id blog_id=blog.id %}" class="dropdown-item py-1 has-text-weight-bold" style="font-size: 10px">
-                                                &ldquo;{{ blog.title|truncatechars:28 }}&rdquo;
-                                            </a>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                            <div class="dropdown-content">
+                                <a href="{% url 'blog:edit-post' pk=post.id %}" class="dropdown-item">Edit</a>
+                                <hr class="dropdown-divider">
+                                <p class="pl-2 is-size-7 has-text-weight-bold">Status:</p>
+                                {% for status in post.status_values %}
+                                <a href="{% url 'blog:set_status' post_id=post.id new_status=status %}" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                                -&nbsp;{{ status|title }}&nbsp;-</a>
+                                {% endfor %}
+                                <hr class="dropdown-divider">
+                                <p class="pl-2 is-size-7 has-text-weight-bold">Move post to:</p>
+                                {% for blog in blogs %}
+                                <a href="{% url 'blog:move_post_to' post_id=post.id blog_id=blog.id %}" class="dropdown-item py-1 has-text-weight-bold" style="font-size: 10px">
+                                    &ldquo;{{ blog.title|truncatechars:28 }}&rdquo;
+                                </a>
+                                {% endfor %}
                             </div>
                         </div>
-                        {% endif %}
                     </div>
-                    </p>
-                    {% with comments.count as total_comments %}
-                        <p>
-                        {{ total_comments }} comment{{ total_comments|pluralize }}
-                        </p>
-                    {% endwith %}
                 </div>
-                <div class="p-3">
-                {% for comment in comments %}
-                    <div class="media">
-                        <figure class="media-left">
-                            <div class="image is-32x32">
-                                <img src="{{ comment.visitor.avatar.url }}">
-                            </div>
-                        </figure>
-                        <div class="media-content">
-                            <a href="/blog/visitor/{{ comment.visitor.id }}">{{ comment.visitor.name }}</a>
-                            <span class="is-size-7">{{ comment.created }}</span>
-                            {{ comment.body|linebreaks }}
-                            {% if valid_visitor == comment.visitor.name %}
-                            <a href="/blog/delete_comment/{{ comment.pk }}" class="delete is-small"></a>
-                            {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        </p>
+        {% with comments.count as total_comments %}
+            <p>
+            {{ total_comments }} comment{{ total_comments|pluralize }}
+            </p>
+        {% endwith %}
+    </div>
+    <div class="p-3">
+    {% for comment in comments %}
+        <div class="media">
+            <figure class="media-left">
+                <div class="image is-32x32">
+                    <img src="{{ comment.visitor.avatar.url }}">
+                </div>
+            </figure>
+            <div class="media-content">
+                <a href="/blog/visitor/{{ comment.visitor.id }}">{{ comment.visitor.name }}</a>
+                <span class="is-size-7">{{ comment.created }}</span>
+                {{ comment.body|linebreaks }}
+                {% if valid_visitor == comment.visitor.name %}
+                <a href="/blog/delete_comment/{{ comment.pk }}" class="delete is-small"></a>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <p>There are no comments yet.</p>
+    {% endfor %}
+        <div class="my-4 p-3" style="border: 1px solid hsl(204,86%,53%);">
+            <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
+                <div class="is-flex">
+                    {% if visitor_avatar %}
+                    <div class="is-flex is-flex-direction-column">
+                        <div class="image is-32x32 mr-3">
+                            <img id="id_visitor-avatar" src="{{ visitor_avatar }}" alt=".">
+                        </div>
+                        <div class="">
+                        <a id="id_avatar-change" onclick="openAvatarTable()" style="font-size: 10px">Change</a>
                         </div>
                     </div>
-                {% empty %}
-                    <p>There are no comments yet.</p>
-                {% endfor %}
-                    <div class="my-4 p-3" style="border: 1px solid hsl(204,86%,53%);">
-                        <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
-                            <div class="is-flex">
-                                {% if visitor_avatar %}
-                                <div class="is-flex is-flex-direction-column">
-                                    <div class="image is-32x32 mr-3">
-                                        <img id="id_visitor-avatar" src="{{ visitor_avatar }}" alt=".">
-                                    </div>
-                                    <div class="">
-                                    <a id="id_avatar-change" onclick="openAvatarTable()" style="font-size: 10px">Change</a>
-                                    </div>
-                                </div>
-                                {% endif %}
-                                <div>
-                                    {{ visitor_form.non_field_errors }} 
-                                    {{ visitor_form.comment }}   
-                                </div>
-                            </div>
-                            <div class="is-flex">
-                                <div class="mx-0">
-                                    <strong style="font-size: 12px;">Name:</strong>
-                                    <br>
-                                    {{ visitor_form.name }}&nbsp-&nbsp
-                                    <br>
-                                    <div id="visitor_name_help" style="text-align: center; font-size: 12px;">
-                                        - Enter name or userid -
-                                    </div>
-                                </div>
-                                <div class="mx-0">
-                                    <strong style="font-size: 12px;">Pin:</strong>
-                                    <br>
-                                    {{ visitor_form.pin }}
-                                    <br>
-                                    <div id="visitor_pin_help" style="text-align: center; font-size: 12px;">
-                                        - Enter 1 to 6 digit pin -
-                                    </div>
-                                </div>
-                            </div>
+                    {% endif %}
+                    <div>
+                        {{ visitor_form.non_field_errors }} 
+                        {{ visitor_form.comment }}   
+                    </div>
+                </div>
+                <div class="is-flex">
+                    <div class="mx-0">
+                        <strong style="font-size: 12px;">Name:</strong>
+                        <br>
+                        {{ visitor_form.name }}&nbsp-&nbsp
+                        <br>
+                        <div id="visitor_name_help" style="text-align: center; font-size: 12px;">
+                            - Enter name or userid -
+                        </div>
+                    </div>
+                    <div class="mx-0">
+                        <strong style="font-size: 12px;">Pin:</strong>
+                        <br>
+                        {{ visitor_form.pin }}
+                        <br>
+                        <div id="visitor_pin_help" style="text-align: center; font-size: 12px;">
+                            - Enter 1 to 6 digit pin -
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="is-flex">
-                                <input 
-                                    id="id_comment-button"
-                                    class="button is-info is-small mr-3 mt-3" 
-                                    type='submit' 
-                                    name='comment-button' 
-                                    value='Add Comment'
-                                    disabled='true'>
-                            </div>
-                        </form>
-                        <div id='id_avatar-table' style="display: none">
-                            <form action="/blog/avatar_select/" method="post">
-                            <table class="table">
-                                <tbody>
-                                    {% for row in avatars %}
-                                    <tr>
-                                        {% for cell in row %}
-                                        <td>
-                                            <div class="image is-32x32">
-                                                <input 
-                                                    type='image' 
-                                                    src="/media/images/avatars/{{ cell }}" 
-                                                    formaction="/blog/avatar_select/{{ cell }}" 
-                                                    name="avatar-select" 
-                                                    width="32" height="32">
-                                            </div>
-                                        </td>
-                                        {% endfor %}
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            </form>
-                        </div>
-                    </div>
+                <div class="is-flex">
+                    <input 
+                        id="id_comment-button"
+                        class="button is-info is-small mr-3 mt-3" 
+                        type='submit' 
+                        name='comment-button' 
+                        value='Add Comment'
+                        disabled='true'>
                 </div>
-            </div>
-        </div>
-        <div id="recent-posts" class="column is-narrow">
-            <div class="box" style="width: 180px">
-                <div class="mb-2 has-text-grey-light">Recent Posts</div>
-                {% for pub in others %}
-                <div>
-                    <div class="is-size-7">
-                        <a href="{{ pub.get_absolute_url }}">
-                        {{ pub.title }}
-                        </a>
-                    </div>
-                    <div class="has-text-weight-light" style="font-size: 12px">
-                        {{ pub.publish }}
-                    </div>
-                    <hr class="my-3">
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-    <div class="bg-modal">
-        <div class="box">
-        {% if sent %}
-            <p class="m-0">You have shared this post with:</p>
-            <strong class="mb-6">{{ modal_data.you }}</strong>
-            <br>
-            <a href="">Close</a>
-        {% else %}
-            <form method="post" class="p-2">
-                {{ email_form.non_field_errors }}
-                <div class="mb-4 is-size-7 has-text-weight-bold" >
-                    {{ email_form.you.errors }}
-                    <label for="{{ email_form.you.id_for_label }}">
-                        Send to email address:
-                    </label>
-                    <br>
-                    {{ email_form.you }}
-                </div>
-                <div class="mb-4 is-size-7 has-text-weight-bold">
-                    {{ email_form.name.errors }}
-                    <label for="{{ email_form.name.id_for_label }}">Your name:</label>
-                    <br>
-                    {{ email_form.name }}
-                </div>
-                <div class="mb-4 is-size-7 has-text-weight-bold">
-                    {{ email_form.me.errors }}
-                    <label for="{{ email_form.me.id_for_label }}">Your email address:</label>
-                    <br>
-                    {{ email_form.me }}
-                </div>
-                {% csrf_token %}
-                <input class="tag is-link" type="submit" name="send-email" value="Send e-mail">
-                <a onclick="closeModal()">Cancel</a>
             </form>
-        {% endif %}
+            <div id='id_avatar-table' style="display: none">
+                <form action="/blog/avatar_select/" method="post">
+                <table class="table">
+                    <tbody>
+                        {% for row in avatars %}
+                        <tr>
+                            {% for cell in row %}
+                            <td>
+                                <div class="image is-32x32">
+                                    <input 
+                                        type='image' 
+                                        src="/media/images/avatars/{{ cell }}" 
+                                        formaction="/blog/avatar_select/{{ cell }}" 
+                                        name="avatar-select" 
+                                        width="32" height="32">
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </form>
+            </div>
         </div>
     </div>
-    <script>
-        function openModal() {
-            document.querySelector(".bg-modal").style.display="flex";
-        }
-        function closeModal() {
-            document.querySelector(".bg-modal").style.display="none";
-        }
-        function openAvatarTable() {
-            document.querySelector("#id_avatar-table").style.display="flex";
-        }
-    </script>
-</section>
-{% endblock %}
+</div>
+{% endblock main %}
+
+{% block sidebar %}
+    <div class="mb-2 has-text-grey-light">Recent Posts</div>
+    {% for pub in others %}
+    <div>
+        <div class="is-size-7">
+            <a href="{{ pub.get_absolute_url }}">
+            {{ pub.title }}
+            </a>
+        </div>
+        <div class="has-text-weight-light" style="font-size: 12px">
+            {{ pub.publish }}
+        </div>
+        <hr class="my-3">
+    </div>
+    {% endfor %}
+{% endblock sidebar %}
+
+{% block lower %}
+<div class="bg-modal">
+    <div class="box">
+    {% if sent %}
+        <p class="m-0">You have shared this post with:</p>
+        <strong class="mb-6">{{ modal_data.you }}</strong>
+        <br>
+        <a href="">Close</a>
+    {% else %}
+        <form method="post" class="p-2">
+            {{ email_form.non_field_errors }}
+            <div class="mb-4 is-size-7 has-text-weight-bold" >
+                {{ email_form.you.errors }}
+                <label for="{{ email_form.you.id_for_label }}">
+                    Send to email address:
+                </label>
+                <br>
+                {{ email_form.you }}
+            </div>
+            <div class="mb-4 is-size-7 has-text-weight-bold">
+                {{ email_form.name.errors }}
+                <label for="{{ email_form.name.id_for_label }}">Your name:</label>
+                <br>
+                {{ email_form.name }}
+            </div>
+            <div class="mb-4 is-size-7 has-text-weight-bold">
+                {{ email_form.me.errors }}
+                <label for="{{ email_form.me.id_for_label }}">Your email address:</label>
+                <br>
+                {{ email_form.me }}
+            </div>
+            {% csrf_token %}
+            <input class="tag is-link" type="submit" name="send-email" value="Send e-mail">
+            <a onclick="closeModal()">Cancel</a>
+        </form>
+    {% endif %}
+    </div>
+</div>
+{% endblock lower %}
+
+{% block heel %}
+<script>
+    function openModal() {
+        document.querySelector(".bg-modal").style.display="flex";
+    }
+    function closeModal() {
+        document.querySelector(".bg-modal").style.display="none";
+    }
+    function openAvatarTable() {
+        document.querySelector("#id_avatar-table").style.display="flex";
+    }
+</script>
+{% endblock heel %}
 
 {% block domready %}
-{% endblock %}
+{% endblock domready %}

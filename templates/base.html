@@ -91,12 +91,31 @@
                 </div>
             </div>
         </nav>    
-        {% block content %}
-        {% endblock content %}
+
+        <section class="section py-2">
+            <div class="columns">
+                <div class="column">
+                {% block main %}
+                {% endblock main %}
+                </div>
+                <div class="column is-narrow">
+                    <div id="recent-posts" class="box" style="width: 180px">
+                    {% block sidebar %}
+                    {% endblock sidebar %}
+                    </div>
+                </div>
+            </div>
+            {% block lower %}
+            {% endblock lower %}
+        </section>
+
         <footer class="footer has-background-info">
             <div class="content has-text-centered has-text-white">
                 <p>Microsnout 2020</p>
             </div>
         </footer>
+
+        {% block heel %}
+        {% endblock heel %}
     </body>
 </html

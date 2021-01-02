@@ -7,7 +7,7 @@ Visitor List
 {% block subtitle %}
 {% endblock subtitle %}
 
-{% block content %}
+{% block main %}
     <div class="media-content p-5">
     {% for visitor in visitors %}
         <div class="media">
@@ -30,4 +30,8 @@ Visitor List
     {% endfor %}
     </div>
     {% include "pagination.html" with page=page_obj %}
-{% endblock %}
+{% endblock main %}
+
+{% block sidebar %}
+    <div class="mb-2 has-text-grey-light">Sidebar</div>
+{% endblock sidebar %}

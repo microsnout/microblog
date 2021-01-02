@@ -8,7 +8,7 @@
 {{ blog.description }}
 {% endblock subtitle %}
 
-{% block content %}
+{% block main %}
     <div class="media-content p-5">
     {% for post in posts %}
         <div class="content">
@@ -26,4 +26,8 @@
     {% endfor %}
     </div>
     {% include "pagination.html" with page=page_obj %}
-{% endblock %}
+{% endblock main %}
+
+{% block sidebar %}
+    <div class="mb-2 has-text-grey-light">Sidebar</div>
+{% endblock sidebar %}
