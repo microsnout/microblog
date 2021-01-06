@@ -18,7 +18,9 @@
             <p class="mb-1 is-size-7">
             Published {{ post.publish }} by {{ post.author }}
             </p>
+            {% autoescape off %}
             {{ post.body|truncatewords:50 }}
+            {% endautoescape %}
             <br>
             <small><a>Like</a> <a>Reply</a></small>
             </p>

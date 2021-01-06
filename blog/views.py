@@ -4,13 +4,14 @@ from django.views.generic import ListView, DetailView, FormView, TemplateView, U
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
-from .forms import EmailPostForm, VisitorForm
+from .forms import EmailPostForm, VisitorForm, PostEditForm
 from .models import Blog, Post, Comment, Visitor
 
 import sys
 import os
 import os.path
 import inspect
+import markdown
 
 # For exceptions only - slow
 thisfunc = lambda: inspect.stack()[1][3]
@@ -160,6 +161,18 @@ class PostDetailView(DetailView):
             logger.debug("HomeView: visitor form NOT valid")
 
 # -----------------------------------------------------
+from django.utils.safestring import mark_safe
+import json
+
+@require_POST
+def get_preview(request):
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+    logger.debug(f"get_preview: {body['body']}")
+    # body_html = mark_safe( markdown.markdown(body_md) )
+    body_html = mark_safe(markdown.markdown(body['body']))
+    logger.debug(f"get_preview markdown: {body_html}")
+    return JsonResponse({'body': body_html})
     
 @require_POST
 def visitor_query(request):
@@ -366,15 +379,33 @@ class VisitorListView(ListView):
         ''' Just published posts belonging to specified blog '''
         return Visitor.objects.all()
     
-class PostUpdateView(UpdateView):
+class PostEditView(UpdateView):
     model = Post
-    fields = ['status', 'title', 'body', ]
+    form_class = PostEditForm
     template_name = 'blog/post/edit.html'
+    success_url = ""
 
     def get_context_data (self, ** kwargs):
+        logger.debug(f"PostEditView:get_context_data kwargs={kwargs}")
         context = super(UpdateView, self).get_context_data(** kwargs)
         try:
             context ['blogs'] = Blog.objects.all()
         except:
             logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
         return context
+
+    def get(self, request, *args, **kwargs):
+        logger.debug(f"PostEditView:get req:{request} **kwargs:{kwargs}")
+        return super(UpdateView, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        logger.debug(f"PostEditView:post req:{request} **kwargs:{kwargs}")
+        return super(UpdateView, self).post(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super(UpdateView, self).get_form(form_class)
+        logger.debug(f"PostEditView:get_form errors:{form.errors}")
+        return form
+
+    def get_success_url(self):
+        return self.request.META.get('HTTP_REFERER')

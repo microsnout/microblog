@@ -38,12 +38,10 @@
         </style>
         <script src="{% static 'js/jquery-3.5.1.js' %}"></script>
         <script src="{% static 'js/scrap-jquery.js' %}"></script>
-        <script>
-            $(document).ready(function(){
-                {% block domready %}
-                {% endblock %}
-            })
-        </script>
+        {% block style %}
+        {% endblock style %}
+        {% block script %}
+        {% endblock script %}
     </head>
     <body>
         {% if user.is_authenticated %}
@@ -94,12 +92,12 @@
 
         <section class="section py-2">
             <div class="columns">
-                <div class="column">
+                <div class="column is-four-fiths">
                 {% block main %}
                 {% endblock main %}
                 </div>
-                <div class="column is-narrow">
-                    <div id="recent-posts" class="box" style="width: 180px">
+                <div class="column is-one-fifth" >
+                    <div id="recent-posts" class="box">
                     {% block sidebar %}
                     {% endblock sidebar %}
                     </div>

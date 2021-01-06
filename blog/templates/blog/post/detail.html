@@ -19,7 +19,9 @@
             Published {{ post.publish }} by {{ post.author }}
         </div>
         <div class="content is-small">
-            {{ post.body|markdown }}
+            {% autoescape off %}
+            {{ post.body }}
+            {% endautoescape %}
         </div>
         <div class="level">
             <div class="level-left mb-3">
@@ -86,6 +88,7 @@
     {% endfor %}
         <div class="my-4 p-3" style="border: 1px solid hsl(204,86%,53%);">
             <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
+                {% csrf_token %}
                 <div class="is-flex">
                     {% if visitor_avatar %}
                     <div class="is-flex is-flex-direction-column">
@@ -232,6 +235,3 @@
     }
 </script>
 {% endblock heel %}
-
-{% block domready %}
-{% endblock domready %}
