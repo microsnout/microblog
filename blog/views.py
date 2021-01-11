@@ -4,22 +4,21 @@ from django.views.generic import ListView, DetailView, FormView, TemplateView, U
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
+from django.db.models import Count
 from .forms import EmailPostForm, VisitorForm, PostEditForm
 from .models import Blog, Post, Comment, Visitor
+from common.decorators import ajax_required
 
-import sys
-import os
-import os.path
+import sys, os, os.path
 import inspect
 import markdown
 
-# For exceptions only - slow
+# For exceptions only - slow - Finds name of calling function
 thisfunc = lambda: inspect.stack()[1][3]
 
 # For adding AJAX 
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET    
-# *****
 
 # Debug logging only
 import logging
@@ -57,11 +56,11 @@ def session_query(request, **kwargs):
                 visitor.avatar = kwargs['new_avatar']
                 visitor.save()
 
-            return (name, visitor.pin, visitor.avatar.url)
+            return (visitor, name, visitor.pin, visitor.avatar.url)
         except:
             logger.debug(f"session_query: Exception:'{sys.exc_info()[0]}'")
 
-    return (None, None, None)
+    return (None, None, None, None)
 
 # -----------------------------------------------------
 
@@ -76,7 +75,8 @@ class PostDetailView(DetailView):
         
         post = self.object
         blog = post.blog
-        comments = post.comments.filter(active=True)
+        # comments = post.comments.filter(active=True)
+        comments = post.comments.filter(active=True).annotate(count=Count('fans')).order_by('-count')
         others = Post.published.all() \
                     .exclude(id=post.id) \
                     .order_by("-created")[:8]
@@ -84,7 +84,7 @@ class PostDetailView(DetailView):
                     .exclude(id=blog.id)
 
         # Check for valid name and pin from session
-        visitor_name, visitor_pin, visitor_avatar = session_query(request)
+        visitor, visitor_name, visitor_pin, visitor_avatar = session_query(request)
 
         if visitor_name:
             visitor_form = VisitorForm(
@@ -103,6 +103,7 @@ class PostDetailView(DetailView):
             'avatars': refactor_list( get_avatar_files(), 8 ),
             'visitor_avatar': visitor_avatar,
             'valid_visitor': visitor_name,
+            'visitor': visitor,
             'blogs': blogs,
             'blog': blog,
         })
@@ -164,21 +165,53 @@ class PostDetailView(DetailView):
 from django.utils.safestring import mark_safe
 import json
 
+@ajax_required
+@require_POST
+def like_comment(request):
+    ''' Ajax handler - called to like and unlike comments in Post Detail View '''
+    status = 'liked'
+    comment_id = request.POST.get('comment_id')
+    logger.debug(f"like_comment: {comment_id}")
+
+    visitor, visitor_name, visitor_pin, visitor_avatar = session_query(request)
+
+    try:
+        comment = Comment.objects.get(id=comment_id)
+
+        if visitor in comment.fans.all():
+            logger.debug(f"like_comment: remove")
+            comment.fans.remove( visitor )
+            liked = False
+            return JsonResponse({ 'status': 'unliked' })
+        else:
+            logger.debug(f"like_comment: add")
+            comment.fans.add(visitor)
+            liked = True
+            return JsonResponse({ 'status': 'liked' })
+    except:
+        logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+        return JsonResponse({'status': 'Error'})
+
+
+
+@ajax_required
 @require_POST
 def get_preview(request):
+    ''' Ajax handler - gets html from markdown filter - currently not used '''
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
     logger.debug(f"get_preview: {body['body']}")
-    # body_html = mark_safe( markdown.markdown(body_md) )
     body_html = mark_safe(markdown.markdown(body['body']))
     logger.debug(f"get_preview markdown: {body_html}")
     return JsonResponse({'body': body_html})
     
+@ajax_required
 @require_POST
 def visitor_query(request):
-    ''' AJAX function called by events for visitor name and pin '''
+    ''' AJAX function called by events for visitor name and pin in Post Detail View '''
     name = request.POST.get('name')
     pin = request.POST.get('pin')
+    def_avatar = Visitor.DEF_AVATAR_URL
 
     # Debug output
     logger.debug(f"name='{name}'")
@@ -195,23 +228,26 @@ def visitor_query(request):
                 request.session['Visitor'] = name
                 return JsonResponse({'status': 'Match', 'avatar_url': visitor.avatar.url})
             else:
-                return JsonResponse({'status': 'Found'})
+                #del request.session['Visitor']
+                return JsonResponse({'status': 'Found', 'avatar_url': def_avatar})
         except:
             logger.debug(f"Not found name:'{name}'")
-            logger.debug(f"Exception:'{sys.exc_info()[0]}'")
-            return JsonResponse({'status': 'Avail'})
+            logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+            #del request.session['Visitor']
+            return JsonResponse({'status': 'Avail', 'avatar_url': def_avatar})
 
-    return JsonResponse({'status':'Null'})
+    #del request.session['Visitor']
+    return JsonResponse({'status':'Null', 'avatar_url': def_avatar})
 
 # -----------------------------------------------------
 
 @require_POST
 def avatar_select(request, *args, **kwargs):
-    ''' Called by avatar buttons in dropdown menu to choose image '''
+    ''' Called by avatar buttons in dropdown menu to choose image - Post Detail View '''
     logger.debug(f"avatar_select: {kwargs}")
 
     # Check for valid name and pin from session
-    visitor_name, visitor_pin, visitor_avatar = session_query(
+    visitor, visitor_name, visitor_pin, visitor_avatar = session_query(
         request,
         new_avatar= kwargs['file'])
 
@@ -219,6 +255,7 @@ def avatar_select(request, *args, **kwargs):
 
 @require_GET
 def delete_comment(request, *args, **kwargs):
+    ''' Comment deletion from Post Detail View '''
     logger.debug(f"delete_comment: {kwargs}")
 
     try:
@@ -226,12 +263,13 @@ def delete_comment(request, *args, **kwargs):
         logger.debug(f"delete_comment: {comment}")
         comment.delete()
     except:
-        logger.debug(f"session_query: Exception:'{sys.exc_info()[0]}'")
+        logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
 
     return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
 
 @require_GET
 def move_post_to(request, *args, **kwargs):
+    ''' Moving post between blogs - Post Detail View '''
     logger.debug(f"move_post_to: {kwargs}")
 
     try:
@@ -247,6 +285,7 @@ def move_post_to(request, *args, **kwargs):
 
 @require_GET
 def set_status(request, *args, **kwargs):
+    ''' Changing post status in Post Detail View '''
     logger.debug(f"set_status: {kwargs}")
 
     try:
@@ -258,35 +297,6 @@ def set_status(request, *args, **kwargs):
 
     return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
 
-# -----------------------------------------------------
-
-def add_email_modal(request, post, context):
-    if request.method == 'POST' and \
-        'send-email' in request.POST:
-        # Form was submitted, need to send email
-        logger.debug("add_email_modal: POST")
-        form = EmailPostForm(request.POST)
-        if form.is_valid():
-            cd = form.cleaned_data
-            post_url = request.build_absolute_uri(
-                            post.get_absolute_url())
-            subject = f"{cd['name']} recommends: " \
-                      f"{post.title}"
-            message = f"{cd['name']} ({cd['me']}) thinks you may like:\n\n" \
-                      f"{post.title}\n" \
-                      f"{post_url}\n" 
-            #send_mail(subject, message, 'microsnout@bell.net', [cd['you']])
-            context.update({
-                'sent': True,
-                'modal': True,
-                'modal_data': cd,
-            })
-    else:
-        # GET request
-        form = EmailPostForm()
-        context.update({
-            'form': form
-        })
 
 # -----------------------------------------------------
 
@@ -295,10 +305,12 @@ class PostIndexView(ListView):
     context_object_name = 'posts'
     paginate_by = 5
     template_name = 'blog/post/index.html'
+    query_status = 'published'
 
     def get_context_data (self, ** kwargs):
         context = super(ListView, self).get_context_data(** kwargs)
         try:
+            context ['query_status'] = self.query_status
             context ['blog'] = Blog.objects.get(id=self.kwargs['blog_id'])
             context ['blogs'] = Blog.objects.all().exclude(id= context['blog'].id )
         except:
@@ -307,7 +319,7 @@ class PostIndexView(ListView):
 
     def get_queryset(self):
         ''' Just published posts belonging to specified blog '''
-        return Post.published.filter(blog=self.kwargs['blog_id'])
+        return Post.objects.filter(status=self.query_status, blog=self.kwargs['blog_id'])
     
 
 # -----------------------------------------------------
@@ -389,6 +401,7 @@ class PostEditView(UpdateView):
         logger.debug(f"PostEditView:get_context_data kwargs={kwargs}")
         context = super(UpdateView, self).get_context_data(** kwargs)
         try:
+            context ['blog'] = self.object.blog
             context ['blogs'] = Blog.objects.all()
         except:
             logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")

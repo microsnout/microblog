@@ -5,7 +5,9 @@ from .views import PostIndexView, PostDetailView, VisitorDetailView, VisitorList
 app_name = 'blog'
 
 urlpatterns = [
-    path('index/<int:blog_id>/<slug:slug>/', views.PostIndexView.as_view(), name='index'),
+    path('index/<int:blog_id>/<slug:slug>/', views.PostIndexView.as_view(query_status='published'), name='index'),
+    path('index/draft/<int:blog_id>/', views.PostIndexView.as_view(query_status='draft'), name='index-draft'),
+    path('index/deleted/<int:blog_id>/', views.PostIndexView.as_view(query_status='deleted'), name='index-deleted'),
     path('<int:year>/<int:month>/<int:day>/<slug:slug>/', PostDetailView.as_view(), name='detail'),
     path('visitor/<int:pk>', VisitorDetailView.as_view(), name='visitor'),
     path('<int:post_id>/share/', views.share, name='share'),
@@ -17,4 +19,5 @@ urlpatterns = [
     path('visitor_list/', views.VisitorListView.as_view(), name='visitor-list'),
     path('edit_post/<int:pk>', PostEditView.as_view(), name='edit-post'),
     path('get_preview/', views.get_preview, name='get-preview'),
+    path('like/', views.like_comment, name='like'),
 ]

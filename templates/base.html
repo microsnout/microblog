@@ -37,7 +37,6 @@
             }
         </style>
         <script src="{% static 'js/jquery-3.5.1.js' %}"></script>
-        <script src="{% static 'js/scrap-jquery.js' %}"></script>
         {% block style %}
         {% endblock style %}
         {% block script %}
@@ -67,7 +66,7 @@
         <nav class="navbar is-transparent has-background-info" role="navigation" aria-label="main navigation">
             <div class="navbar-menu is-active">
                 <div class="navbar-start">
-                    <a class="navbar-item has-text-white" href="{% url 'home' %}"> Home </a>
+                    <a class="navbar-item has-text-white" href="{{ blog.get_absolute_url }}"> Home </a>
                     {% if user.is_staff %}
                     <div class="navbar-item has-dropdown is-hoverable">
                         <a class="navbar-item has-text-white px-2">&laquo;Admin&raquo;</a>
@@ -88,6 +87,8 @@
                     {% endif %}
                 </div>
             </div>
+            {% block navbar %}
+            {% endblock navbar %}
         </nav>    
 
         <section class="section py-2">

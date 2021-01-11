@@ -98,13 +98,16 @@ class Post(models.Model):
                              self.publish.day, self.slug])
 
 class Visitor(models.Model):
+    DEF_AVATAR = "SeekPng.com_avatar-png_1150362.png"
+    DEF_AVATAR_URL = settings.MEDIA_AVATAR_URL + DEF_AVATAR
+
     name = models.CharField(max_length=28, unique=True)
     pin = models.CharField(max_length=6)
     last_visit = models.DateTimeField(auto_now=True)
     avatar = models.ImageField(
                 upload_to= 'images/avatars/',
                 storage= MyFileSystemStorage('images/avatars/'),
-                default= "SeekPng.com_avatar-png_1150362.png")
+                default= DEF_AVATAR)
 
     class Meta:
         ordering = ('-last_visit',)
@@ -129,6 +132,10 @@ class Comment (models.Model):
     updated = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True) 
     body = models.CharField(max_length=300)
+    fans = models.ManyToManyField(
+                    Visitor,
+                    related_name='comments_liked',
+                    blank=True)
 
     class Meta:
         ordering = ('created',)

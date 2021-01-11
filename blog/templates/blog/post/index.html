@@ -8,8 +8,16 @@
 {{ blog.description }}
 {% endblock subtitle %}
 
+{% block navbar %}
+{% endblock navbar %}
+
 {% block main %}
-    <div class="media-content p-5">
+    <div class="py-2">
+        {% ifnotequal query_status 'published' %}
+        <div class="is-flex is-size-4 has-text-info is-justify-content-center has-text-weight-bold">
+            ({{ query_status|title }})
+        </div>
+        {% endifnotequal %}
     {% for post in posts %}
         <div class="content">
             <p class='mb-0'>
@@ -19,15 +27,41 @@
             Published {{ post.publish }} by {{ post.author }}
             </p>
             {% autoescape off %}
-            {{ post.body|truncatewords:50 }}
+            {{ post.body|striptags|truncatewords:50 }}
             {% endautoescape %}
             <br>
             <small><a>Like</a> <a>Reply</a></small>
             </p>
         </div>
     {% endfor %}
-    </div>
     {% include "pagination.html" with page=page_obj %}
+    {% if user.is_staff %}
+    <div class="level">
+        <div class="level-left">
+        </div>
+        <div class="level-right mb-3">
+            <div class="level-item">
+                <div class="dropdown is-hoverable">
+                    <div class="dropdown-trigger">
+                            <a style="font-size: 12px;" class="">&laquo;Admin&raquo;</a>
+                    </div>
+                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                        <div class="dropdown-content">
+                            <p class="pl-2 is-size-7 has-text-weight-bold">Show status:</p>
+                            <a href="{% url 'blog:index-draft' blog_id=blog.pk %}" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                            -&nbsp;Draft&nbsp;-</a>
+                            <a href="{% url 'blog:index' blog_id=blog.pk slug=blog.slug %}" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                            -&nbsp;Published&nbsp;-</a>
+                            <a href="{% url 'blog:index-deleted' blog_id=blog.pk %}" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                            -&nbsp;Deleted&nbsp;-</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    </div>
 {% endblock main %}
 
 {% block sidebar %}

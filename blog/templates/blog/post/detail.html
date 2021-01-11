@@ -9,6 +9,14 @@
 {{ post.blog.description }}
 {% endblock subtitle %}
 
+
+{% block style %}
+<style type="text/css">
+.likeIcon { cursor: pointer; }
+</style>
+{% endblock style %}
+
+
 {% block main %}
 <div class="p-2">
     <div class="p-0">
@@ -25,7 +33,6 @@
         </div>
         <div class="level">
             <div class="level-left mb-3">
-                <div class="level-item"><a style="font-size: 12px" class="pr-3">Like</a></div> 
                 <div class="level-item"><a style="font-size: 12px" class="pr-3" href="{% url 'blog:share' post.id %}">Share</a></div>
                 <div class="level-item"><a style="font-size: 12px" onclick="openModal()">Email</a></div>
             </div>
@@ -78,9 +85,25 @@
                 <a href="/blog/visitor/{{ comment.visitor.id }}">{{ comment.visitor.name }}</a>
                 <span class="is-size-7">{{ comment.created }}</span>
                 {{ comment.body|linebreaks }}
-                {% if valid_visitor == comment.visitor.name %}
-                <a href="/blog/delete_comment/{{ comment.pk }}" class="delete is-small"></a>
-                {% endif %}
+                <div class="is-flex is-flex-direction-row is-align-content-center">
+                    <div class="is-flex is-align-content-center">
+                        {% if visitor in comment.fans.all %}
+                        <a class="likeIcon icon is-small has-text-success" data-id="{{ comment.id }}" href="#">
+                        {% else %}
+                        <a class="likeIcon icon is-small has-text-grey" data-id="{{ comment.id }}" href="#">
+                        {% endif %}
+                            <i class="fas fa-check-square"></i>
+                        </a>
+                        {% with total_likes=comment.fans.count %}
+                        <span class="ml-1 is-size-7">(<span class="iconCount">{{ total_likes }}</span>)</span>
+                        {% endwith %}
+                    </div>
+                    {% if valid_visitor == comment.visitor.name %}
+                    <div class="ml-3">
+                        <a href="/blog/delete_comment/{{ comment.pk }}" class="delete is-small"></a>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     {% empty %}
@@ -90,7 +113,6 @@
             <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
                 {% csrf_token %}
                 <div class="is-flex">
-                    {% if visitor_avatar %}
                     <div class="is-flex is-flex-direction-column">
                         <div class="image is-32x32 mr-3">
                             <img id="id_visitor-avatar" src="{{ visitor_avatar }}" alt=".">
@@ -99,7 +121,6 @@
                         <a id="id_avatar-change" onclick="openAvatarTable()" style="font-size: 10px">Change</a>
                         </div>
                     </div>
-                    {% endif %}
                     <div>
                         {{ visitor_form.non_field_errors }} 
                         {{ visitor_form.comment }}   
@@ -223,7 +244,8 @@
 {% endblock lower %}
 
 {% block heel %}
-<script>
+<script type="text/javascript">
+
     function openModal() {
         document.querySelector(".bg-modal").style.display="flex";
     }
@@ -233,5 +255,106 @@
     function openAvatarTable() {
         document.querySelector("#id_avatar-table").style.display="flex";
     }
+
+    $('.likeIcon').on('click', function() {
+        var oIcon = $(this);
+
+        $.post('{% url "blog:like" %}', {
+                comment_id: oIcon.data('id')
+            },
+            function(data) {
+                var status = data['status'];
+                var oCount = oIcon.parent().find('.iconCount');
+                var likes = parseInt( oCount.text() );
+
+                if ( status == 'liked' ) {
+                    oIcon.removeClass('has-text-grey has-text-success').addClass('has-text-success');
+                    oCount.text(++likes);
+                } else {
+                    oIcon.removeClass('has-text-grey has-text-success').addClass('has-text-grey');
+                    oCount.text(--likes);
+                }
+            })
+            .fail(function(response) {
+                alert('Error: ' + response.responseText);
+            });
+
+        return false;
+    });
+
+    // Visitor name changed handler
+    $('#id_visitor-name, #id_visitor-pin').on('keyup change', function() {
+
+        $.post('/blog/visitor_query/', {
+                name: $('#id_visitor-name').val(),
+                pin: $('#id_visitor-pin').val()
+            },
+            function(data) {
+                var status = data['status'];
+                if (status == 'Null') {
+                    // No name or less than minimum length
+                    $('#id_visitor-name').css('color', 'grey');
+                    $('#id_visitor-pin').css('color', 'grey');
+                    $('#id_visitor-pin').prop('readonly', false);
+                    $('#visitor_name_help').html('- Enter name or userid -')
+                    $('#visitor_pin_help').html('- Enter 1 to 6 digit pin -')
+                    $('#id_comment-button').prop('disabled', true);
+                    $('#id_visitor-name').focus();
+                    $('#id_visitor-avatar').prop('src', data['avatar_url']);
+                } else if (status == 'Match') {
+                    // Name in db, pin match
+                    $('#id_visitor-name').css('color', 'green');
+                    $('#id_visitor-pin').css('color', 'green');
+                    $('#id_visitor-pin').prop('readonly', true);
+                    $('#visitor_name_help').html('- Name is validated -')
+                    $('#visitor_pin_help').html('- Pin is valid -')
+                    $('#id_comment-button').prop('disabled', false);
+                    $('#id_visitor-avatar').prop('src', data['avatar_url']);
+                } else if (status == 'Found') {
+                    // Name in db, invalid pin
+                    $('#id_visitor-name').css('color', 'red');
+                    $('#id_visitor-pin').css('color', 'grey');
+                    $('#id_visitor-pin').prop('readonly', false);
+                    $('#visitor_name_help').html('- Name is recognized -')
+                    $('#visitor_pin_help').html('- Enter matching pin-')
+                    $('#id_comment-button').prop('disabled', true);
+                    $('#id_visitor-avatar').prop('src', data['avatar_url']);
+                } else if (status == 'Avail') {
+                    // Name is unrecognized but available
+                    $('#id_visitor-name').css('color', 'grey');
+                    $('#id_visitor-pin').css('color', 'grey');
+                    $('#id_visitor-pin').prop('readonly', false);
+                    $('#visitor_name_help').html('- New name is available -')
+                    $('#visitor_pin_help').html('- Enter 1 to 6 digit pin -')
+                    $('#id_comment-button').prop('disabled', false);
+                    $('#id_visitor-avatar').prop('src', data['avatar_url']);
+                }
+            }
+        )
+    })
+
+    $('#id_visitor-name').on('keypress', function(event) {
+        var regex = new RegExp("^[a-zA-Z0-9. _]+$");
+        var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+        if (!regex.test(key)) {
+            event.preventDefault();
+            return false;
+        }
+    });
+
+    $('#id_visitor-pin').on('keypress', function(event) {
+        var regex = new RegExp("^[0-9]+$");
+        var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+        if (!regex.test(key)) {
+            event.preventDefault();
+            return false;
+        }
+    });
+
+    $('#id_avatar-change').on('onclick', function(event) {
+        $('#id_avatar-table').style.display = "none"
+    })
+
+    $('#id_visitor-name').trigger('change');
 </script>
 {% endblock heel %}
