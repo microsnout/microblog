@@ -75,8 +75,9 @@ class PostDetailView(DetailView):
         
         post = self.object
         blog = post.blog
-        # comments = post.comments.filter(active=True)
-        comments = post.comments.filter(active=True).annotate(count=Count('fans')).order_by('-count')
+        comments = post.comments.filter(active=True) \
+                    .annotate(count=Count('fans')) \
+                    .order_by('-count')
         others = Post.published.all() \
                     .exclude(id=post.id) \
                     .order_by("-created")[:8]
@@ -85,6 +86,9 @@ class PostDetailView(DetailView):
 
         # Check for valid name and pin from session
         visitor, visitor_name, visitor_pin, visitor_avatar = session_query(request)
+
+        # Validated user has already commented?
+        deja_commente = comments.filter(visitor=visitor).exists()
 
         if visitor_name:
             visitor_form = VisitorForm(
@@ -106,6 +110,7 @@ class PostDetailView(DetailView):
             'visitor': visitor,
             'blogs': blogs,
             'blog': blog,
+            'has_commented': deja_commente,
         })
         return self.render_to_response(context)
 
@@ -384,9 +389,6 @@ class VisitorListView(ListView):
             logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
         return context
 
-    def get_queryset(self):
-        ''' Just published posts belonging to specified blog '''
-        return Post.published.filter(blog=self.kwargs['blog_id'])
     def get_queryset(self):
         ''' Just published posts belonging to specified blog '''
         return Visitor.objects.all()

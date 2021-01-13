@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Blog List
+{% endblock title %}
+
+{% block subtitle %}
+{% endblock subtitle %}
+
+{% block main %}
+    <div class="block p-5">
+        <form method="post">
+            {{ formset.management_form }}
+            {% for form in formset %}
+                {% for hidden in form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+                <div class="box">
+                    <div class="is-flex is-flex-direction-column">
+                        <div class="my-0 py-0">
+                            <span class="has-text-weight-bold is-size-7 my-0 py-0">{{ form.title.label_tag }}</span><br>
+                            {{ form.title }}
+                            {{ form.slug }}
+                        </div>
+                        <div class="my-2">
+                            <span class="has-text-weight-bold is-size-7 my-0 py-0">{{ form.description.label_tag }}</span><br>
+                            {{ form.description }}
+                        </div>
+                        <div class="mt-2 is-size-7 has-text-weight-bold">
+                            {{ form.status }}
+                            <span class="ml-3">{{ form.one_comment.label_tag }} {{ form.one_comment }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            <input class="button is-info is-small" type="submit" value="Save">
+        </form>
+    </div>
+{% endblock main %}
+
+{% block sidebar %}
+    <div class="mb-2 has-text-grey-light">Sidebar</div>
+{% endblock sidebar %}

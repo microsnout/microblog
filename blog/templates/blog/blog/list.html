@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Blog List
+{% endblock title %}
+
+{% block subtitle %}
+{% endblock subtitle %}
+
+{% block main %}
+    <div class="block p-5">
+    {% for blog in blogs %}
+        <div class="box">
+            <div class='mb-0'>
+                <div class="is-size-7">
+                    <a class="is-size-6" href="{{ blog.get_absolute_url }}">{{ blog.title }}</a>
+                        <br>-&nbsp;{{ blog.description }}
+                </div>
+                <span class="mt-0 is-size-7">
+                Last post: {{ blog.last_post }}
+                </span>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% endblock main %}
+
+{% block sidebar %}
+    <div class="mb-2 has-text-grey-light">Sidebar</div>
+{% endblock sidebar %}

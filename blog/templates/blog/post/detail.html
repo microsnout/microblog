@@ -148,6 +148,9 @@
                 </div>
 
                 <div class="is-flex">
+                    {% if has_commented %}
+                    <span class="my-2 has-text-grey is-size-6">(You have already commented)</span>
+                    {% else %}
                     <input 
                         id="id_comment-button"
                         class="button is-info is-small mr-3 mt-3" 
@@ -155,6 +158,7 @@
                         name='comment-button' 
                         value='Add Comment'
                         disabled='true'>
+                    {% endif %}
                 </div>
             </form>
             <div id='id_avatar-table' style="display: none">

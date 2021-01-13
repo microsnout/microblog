@@ -1,6 +1,7 @@
 from django.urls import path
-from . import views
+from . import views, blogs
 from .views import PostIndexView, PostDetailView, VisitorDetailView, VisitorListView, PostEditView
+from .blogs import BlogListView
 
 app_name = 'blog'
 
@@ -20,4 +21,5 @@ urlpatterns = [
     path('edit_post/<int:pk>', PostEditView.as_view(), name='edit-post'),
     path('get_preview/', views.get_preview, name='get-preview'),
     path('like/', views.like_comment, name='like'),
+    path('blog_list/', blogs.BlogListView.as_view(), name='blog-list'),
 ]

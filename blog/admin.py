@@ -7,9 +7,9 @@ class BlogAdmin(admin.ModelAdmin):
     list_filter = ('status', 'owner')
     search_fields = ('title', 'description')
     prepopulated_fields = { 'slug': ('title',)}
-    date_hierarchy = 'created'
+    date_hierarchy = 'last_post'
     ordering = ('owner', 'status', 'title')
-    exclude = ('last_post', 'created')
+    exclude = ('last_post',)
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):

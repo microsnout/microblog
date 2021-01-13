@@ -45,6 +45,7 @@ class Blog(models.Model):
     description = models.CharField(max_length=500)
     created = models.DateTimeField(auto_now_add=True)
     last_post = models.DateTimeField(null=True)
+    one_comment = models.BooleanField(default=False)
 
     class Meta:
         ordering = ("-created",)
