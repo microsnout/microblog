@@ -27,7 +27,8 @@ class BaseBlogFormSet(BaseModelFormSet):
 
     def clean(self):
         """ Checks that no two articles have the same title """
-        logger.debug(f"BaseBlogFormSet:clean")
+        logger.debug(f"BaseBlogFormSet:clean can_delete={self.can_delete}")
+        logger.debug(f"BaseBlogFormSet:clean class={type(self)}")
         if any(self.errors):
             logger.debug(f"BaseBlogFormSet:clean errors={self.errors}")
             # Don't bother validating the formset unless each form is valid on its own
@@ -45,13 +46,15 @@ class BaseBlogFormSet(BaseModelFormSet):
 
 
 # Custom formset with validation 
-BlogFormSet = modelformset_factory(Blog, fields=('title', 'description'), formset=BaseBlogFormSet)
+BlogFormSet = modelformset_factory(Blog, fields=('title', 'description'), formset=BaseBlogFormSet, can_delete=True)
 
 class BlogListView(ModelFormSetView):
     template_name = 'blog/blog/formset.html'
     model = Blog
     formset_class = BlogFormSet
-    fields = ('title', 'slug', 'description', 'status', 'one_comment')
+    logger.debug(f"BlogListView formset_class={formset_class.can_delete}")
+    #fields = ('title', 'slug', 'description', 'status', 'one_comment')
+    exclude = []
 
     def get_context_data (self, ** kwargs):
         logger.debug(f"BlogListView:get_context_data kwargs={kwargs}")
@@ -62,3 +65,5 @@ class BlogListView(ModelFormSetView):
             logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
         return context
 
+
+logger.debug("BLOGS Hello")

@@ -1,6 +1,10 @@
 from django.contrib import admin
 from .models import Blog, Post, Comment, Visitor
 
+# Debug logging only
+import logging
+logger = logging.getLogger(__name__)
+
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'owner', 'status', 'banner', 'description')
@@ -31,4 +35,7 @@ class VisitorAdmin(admin.ModelAdmin):
     list_display = ('name', 'pin', 'last_visit')
     list_filter = ('name', 'pin', 'last_visit')
     search_fields = ('name',)
+
+
+logger.debug("ADMIN Hello")
     

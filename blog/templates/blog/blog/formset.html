@@ -16,6 +16,7 @@ Blog List
                     {{ hidden }}
                 {% endfor %}
                 <div class="box">
+                    {{ form.DELETE }}
                     <div class="is-flex is-flex-direction-column">
                         <div class="my-0 py-0">
                             <span class="has-text-weight-bold is-size-7 my-0 py-0">{{ form.title.label_tag }}</span><br>
@@ -31,6 +32,7 @@ Blog List
                             <span class="ml-3">{{ form.one_comment.label_tag }} {{ form.one_comment }}</span>
                         </div>
                     </div>
+                    {{ form.DELETION_FIELD_NAME }}
                 </div>
             {% endfor %}
             <input class="button is-info is-small" type="submit" value="Save">

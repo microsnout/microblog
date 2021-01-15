@@ -49,13 +49,13 @@
                                 <hr class="dropdown-divider">
                                 <p class="pl-2 is-size-7 has-text-weight-bold">Status:</p>
                                 {% for status in post.status_values %}
-                                <a href="{% url 'blog:set_status' post_id=post.id new_status=status %}" class="dropdown-item py-1 has-text-weight-bold" style="align: center; font-size: 10px">
+                                <a href="{% url 'blog:set_status' post_id=post.id new_status=status %}" class="dropdown-item" style="align: center">
                                 -&nbsp;{{ status|title }}&nbsp;-</a>
                                 {% endfor %}
                                 <hr class="dropdown-divider">
                                 <p class="pl-2 is-size-7 has-text-weight-bold">Move post to:</p>
                                 {% for blog in blogs %}
-                                <a href="{% url 'blog:move_post_to' post_id=post.id blog_id=blog.id %}" class="dropdown-item py-1 has-text-weight-bold" style="font-size: 10px">
+                                <a href="{% url 'blog:move_post_to' post_id=post.id blog_id=blog.id %}" class="dropdown-item">
                                     &ldquo;{{ blog.title|truncatechars:28 }}&rdquo;
                                 </a>
                                 {% endfor %}

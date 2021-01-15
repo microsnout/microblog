@@ -10,6 +10,11 @@ import os
 import pdb
 from urllib.parse import urljoin
 
+# Debug logging only
+import logging
+logger = logging.getLogger(__name__)
+
+
 @deconstructible
 class MyFileSystemStorage(FileSystemStorage):
     def __init__(self, subdir):
@@ -143,3 +148,6 @@ class Comment (models.Model):
 
     def __str__(self):
         return f"[{self.visitor}]@{self.created}"
+
+
+logger.debug("MODELS Hello")

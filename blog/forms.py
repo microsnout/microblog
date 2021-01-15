@@ -1,6 +1,10 @@
 from django import forms
 from .models import Comment, Post
 
+# Debug logging only
+import logging
+logger = logging.getLogger(__name__)
+
 app_name = 'blog'
 
 class EmailPostForm(forms.Form):
@@ -38,3 +42,4 @@ class PostEditForm(forms.ModelForm):
     
     
     
+logger.debug("FORMS Hello")
