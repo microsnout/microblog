@@ -6,5 +6,3 @@ logger = logging.getLogger(__name__)
 
 class BlogConfig(AppConfig):
     name = 'blog'
-
-logger.debug("APPS Hello")

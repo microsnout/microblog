@@ -35,7 +35,3 @@ class VisitorAdmin(admin.ModelAdmin):
     list_display = ('name', 'pin', 'last_visit')
     list_filter = ('name', 'pin', 'last_visit')
     search_fields = ('name',)
-
-
-logger.debug("ADMIN Hello")
-    

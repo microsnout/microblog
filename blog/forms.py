@@ -40,6 +40,3 @@ class PostEditForm(forms.ModelForm):
         model = Post
         fields = ['status', 'title', 'body', ]
     
-    
-    
-logger.debug("FORMS Hello")

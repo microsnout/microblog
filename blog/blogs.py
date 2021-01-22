@@ -64,6 +64,3 @@ class BlogListView(ModelFormSetView):
         except:
             logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
         return context
-
-
-logger.debug("BLOGS Hello")

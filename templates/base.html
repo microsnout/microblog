@@ -92,17 +92,6 @@
                                     </a>
                                 {% endfor %}
                             {% endif %}
-                            <hr class="dropdown-divider">
-                            <p class="pl-2 is-size-7 has-text-weight-bold">Addons:</p>
-                            {% if addons %}
-                            <hr class="dropdown-divider">
-                            <p class="pl-2 is-size-7 has-text-weight-bold">Goto blog:</p>
-                                {% for addon in addons %}
-                                    <a href="{{ addon.url }}" class="dropdown-item">
-                                        &ldquo;{{ addon.title }}&rdquo;
-                                    </a>
-                                {% endfor %}
-                            {% endif %}
                         </div>
                     </div>
                     {% endif %}

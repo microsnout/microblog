@@ -40,19 +40,6 @@ def refactor_list( list, n ):
     return new_
 
 # -----------------------------------------------------
-# Addons
-addon_list = []
-
-class Addon:
-    def __init__(self, title, url):
-        self.title = title
-        self.url = url
-
-def register_addon( title, url ):
-    global addon_list
-    addon_list.append( Addon(title, url) )
-
-# -----------------------------------------------------
     
 def session_query(request, **kwargs):
     ''' Look for last visitor name in session data and lookup in db '''
@@ -438,6 +425,3 @@ class PostEditView(UpdateView):
 
     def get_success_url(self):
         return self.request.META.get('HTTP_REFERER')
-
-
-logger.debug("VIEWS Hello")

@@ -2,7 +2,6 @@ from django.urls import path
 from . import views, blogs
 from .views import PostIndexView, PostDetailView, VisitorDetailView, VisitorListView, PostEditView
 from .blogs import BlogListView
-from . import addons
 
 # Debug logging only
 import logging
@@ -28,6 +27,3 @@ urlpatterns = [
     path('like/', views.like_comment, name='like'),
     path('blog_list/', blogs.BlogListView.as_view(), name='blog-list'),
 ]
-
-
-logger.debug("URLS Hello")
