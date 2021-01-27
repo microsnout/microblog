@@ -79,6 +79,7 @@ class PostDetailView(DetailView):
                     .annotate(count=Count('fans')) \
                     .order_by('-count')
         others = Post.published.all() \
+                    .filter(blog=blog) \
                     .exclude(id=post.id) \
                     .order_by("-created")[:8]
         blogs = Blog.objects.all() \

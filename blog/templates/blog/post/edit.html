@@ -12,6 +12,11 @@
 
 {% block main %}
 <div class="py-2">
+    {% if post.banner %}
+    <div class="image">
+        <img src="{{ post.banner.url }}" alt=".">
+    </div>
+    {% endif %}
     <form name="postEditForm" id="post-edit-form" method="post" autocomplete="off" action=""
             onsubmit="if( validateMode() ) {
                 this.title.value = oTitle.innerHTML;

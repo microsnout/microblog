@@ -20,6 +20,11 @@
 {% block main %}
 <div class="p-2">
     <div class="p-0">
+        {% if post.banner %}
+        <div class="image">
+            <img src="{{ post.banner.url }}" alt=".">
+        </div>
+        {% endif %}
         <div class="mb-0 has-text-info has-text-weight-bold is-size-2">
         {{ post.title }}
         </div>

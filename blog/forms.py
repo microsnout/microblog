@@ -26,7 +26,10 @@ class VisitorForm(forms.Form):
                         'type': 'text', }))
 
 class PostEditForm(forms.ModelForm):
-    status = forms.ChoiceField(choices=Post.STATUS)
+    status = forms.ChoiceField(choices=Post.STATUS,
+                               widget=forms.Select( attrs={
+                                   'onchange': "$('#id-save-button').prop('disabled', false);",
+                               }))
     title = forms.CharField(max_length=250,
                     widget=forms.TextInput(attrs={
                         'size':100,

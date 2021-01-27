@@ -71,6 +71,10 @@ class Post(models.Model):
     STATUS = Choices( 'draft', 'published', 'deleted' )
     status_values = [v[0] for v in STATUS]
 
+    banner = models.ImageField(
+                upload_to= 'images/banners/',
+                storage= MyFileSystemStorage('images/banners/'),
+                blank= True)
     title = models.CharField(max_length=250)
     slug = models.SlugField(max_length=250,
                             unique_for_date='publish')
