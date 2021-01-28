@@ -25,6 +25,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('', RedirectView.as_view(pattern_name='blog:index'), name='home'),
+    path('', RedirectView.as_view(pattern_name='blog:blog-list'), name='home'),
 ] + static(settings.MEDIA_URL,
             document_root=settings.MEDIA_ROOT)
