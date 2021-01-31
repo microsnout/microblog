@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, FormView, TemplateView, UpdateView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
@@ -8,6 +10,7 @@ from django.db.models import Count
 from .forms import EmailPostForm, VisitorForm, PostEditForm
 from .models import Blog, Post, Comment, Visitor
 from common.decorators import ajax_required
+
 
 import sys, os, os.path
 import inspect
@@ -376,11 +379,12 @@ class VisitorDetailView(DetailView):
         })
         return self.render_to_response(context)
 
-class VisitorListView(ListView):
+class VisitorListView(LoginRequiredMixin, ListView):
     ''' Index/List view of all visitors to all blogs '''
     context_object_name = 'visitors'
     paginate_by = 10
     template_name = 'blog/visitor/index.html'
+    login_url = 'blog:home'
 
     def get_context_data (self, ** kwargs):
         context = super(ListView, self).get_context_data(** kwargs)
@@ -395,11 +399,12 @@ class VisitorListView(ListView):
         ''' Just published posts belonging to specified blog '''
         return Visitor.objects.all()
     
-class PostEditView(UpdateView):
+class PostEditView(LoginRequiredMixin, UpdateView):
     model = Post
     form_class = PostEditForm
     template_name = 'blog/post/edit.html'
     success_url = ""
+    login_url = 'blog:home'
 
     def get_context_data (self, ** kwargs):
         logger.debug(f"PostEditView:get_context_data kwargs={kwargs}")
@@ -426,3 +431,15 @@ class PostEditView(UpdateView):
 
     def get_success_url(self):
         return self.request.META.get('HTTP_REFERER')
+
+class HomeLoginView(LoginView):
+    template_name = 'blog/home.html'
+
+    def get_context_data (self, ** kwargs):
+        logger.debug(f"HomeLoginView:get_context_data kwargs={kwargs}")
+        context = super(LoginView, self).get_context_data(** kwargs)
+        try:
+            context ['blogs'] = Blog.objects.all()
+        except:
+            logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+        return context

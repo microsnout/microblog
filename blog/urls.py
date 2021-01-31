@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views, blogs
-from .views import PostIndexView, PostDetailView, VisitorDetailView, VisitorListView, PostEditView
+from .views import PostIndexView, PostDetailView, VisitorDetailView, VisitorListView, PostEditView, HomeLoginView
 from .blogs import BlogListView
 
 # Debug logging only
@@ -26,4 +26,5 @@ urlpatterns = [
     path('get_preview/', views.get_preview, name='get-preview'),
     path('like/', views.like_comment, name='like'),
     path('blog_list/', blogs.BlogListView.as_view(), name='blog-list'),
+    path('home/', HomeLoginView.as_view(), name='home')
 ]

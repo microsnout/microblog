@@ -156,8 +156,8 @@ EMAIL_USE_TLS = True
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
-LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = ''
+LOGIN_REDIRECT_URL = 'blog:blog-list'
+LOGOUT_REDIRECT_URL = 'blog:home'
 
 MEDIA_URL = '/media/' 
 MEDIA_ROOT = BASE_DIR / 'media'

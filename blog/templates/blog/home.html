@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Microsnout Blog (new){% endblock title %}
+
+{% block main %}
+
+<div class="is-flex is-flex-direction-row">
+    <div class="mx-4 px-6 py-3 my-6">
+        {% for blog in blogs %}
+        <div class="message is-info">
+            <div class="message-header">
+                {{ blog.title }}
+            </div>
+            <div class="message-body">
+                <a href="{% url 'blog:index' blog_id=blog.id slug=blog.slug %}">
+                    &ldquo;{{ blog.description|truncatechars:28 }}&rdquo;
+                </a><br>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock main %}
+
+
+{% block sidebar %}
+        {% if user.is_authenticated %}
+            <div class="is-size-6 mt-6">
+                Logged in under name:
+            </div>
+            <div class="is-size-6 has-text-weight-bold">
+                &ldquo;{{ user.username }}&rdquo;
+            </div>
+            <br>
+            <a class="button is-link is-small" href="{% url 'logout' %}">Logout</a>
+        {% else %}
+            <strong class="has-text-link">Admin Login</strong>
+            {% if form.errors %}
+                {% for error in form.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            {% endif %}
+            <form class="" method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="block">
+                    <small>{{ field.label }}</small>
+                    <br>
+                    {{ field }}
+                </div>
+            {% endfor %}
+                <button class="button is-small is-link" type="submit">Log In</button>
+            </form>
+        {% endif %}
+{% endblock sidebar %}

@@ -1,26 +1,31 @@
 {% extends 'base.html' %}
 
-{% block title %}Log In{% endblock title %}
+{% block title %}Microsnout Blog{% endblock title %}
 
-{% block content %}
+{% block main %}
 
-<div class="px-6 pb-3">
-    <strong class="has-text-link">Log In</strong>
-    {% if form.errors %}
-        {% for error in form.errors %}
-        <p>{{ error }}</p>
+<div class="is-flex is-flex-direction-row">
+    <div class="box mx-4 px-6 py-3 my-6">
+        <span>Goto default blog.</span>
+    </div>
+    <div class="box mx-4 px-6 py-3 my-6">
+        <strong class="has-text-link">Admin Login</strong>
+        {% if form.errors %}
+            {% for error in form.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        {% endif %}
+        <form class="" method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="block">
+                <small>{{ field.label }}</small>
+                <br>
+                {{ field }}
+            </div>
         {% endfor %}
-    {% endif %}
-    <form class="" method="post">
-    {% csrf_token %}
-    {% for field in form %}
-        <div class="block">
-            <small>{{ field.label }}</small>
-            <br>
-            {{ field }}
-        </div>
-    {% endfor %}
-        <button class="button block is-link" type="submit">Log In</button>
-    </form>
+            <button class="button is-small is-link" type="submit">Log In</button>
+        </form>
+    </div>
 </div>
-{% endblock content %}
+{% endblock main %}
