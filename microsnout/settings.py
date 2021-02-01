@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # microsnout
     'blog.apps.BlogConfig',
-    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -61,7 +60,7 @@ ROOT_URLCONF = 'microsnout.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [ BASE_DIR / 'templates', BASE_DIR / 'addons/templates' ],
+        'DIRS': [ BASE_DIR / 'templates', ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,8 +152,6 @@ EMAIL_HOST_USER = 'microsnout@bell.net'
 EMAIL_HOST_PASSWORD = 'Bell+Cat22'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
-AUTH_USER_MODEL = 'accounts.CustomUser'
 
 LOGIN_REDIRECT_URL = 'blog:blog-list'
 LOGOUT_REDIRECT_URL = 'blog:home'

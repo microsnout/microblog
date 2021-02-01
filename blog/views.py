@@ -66,6 +66,7 @@ def session_query(request, **kwargs):
     return (None, None, None, None)
 
 # -----------------------------------------------------
+from django.db.models import Q
 
 class PostDetailView(DetailView):
     ''' Detailed view of single post along with comments and recent post sidebar '''
@@ -76,20 +77,27 @@ class PostDetailView(DetailView):
         self.object = self.get_object()
         context = self.get_context_data(object=self.object)
         
+        # Check for valid name and pin from session
+        visitor, visitor_name, visitor_pin, visitor_avatar = session_query(request)
+
         post = self.object
         blog = post.blog
-        comments = post.comments.filter(active=True) \
-                    .annotate(count=Count('fans')) \
-                    .order_by('-count')
+        if request.user.is_authenticated:
+            # Include all comments for the blog author
+            comments = post.comments.filter() \
+                        .annotate(count=Count('fans')) \
+                        .order_by('-count')
+        else:
+            # Show all approved comments and my unapproved comments
+            comments = post.comments.filter( Q(approved=True) | Q(visitor=visitor) ) \
+                        .annotate(count=Count('fans')) \
+                        .order_by('-count')
         others = Post.published.all() \
                     .filter(blog=blog) \
                     .exclude(id=post.id) \
                     .order_by("-created")[:8]
         blogs = Blog.objects.all() \
                     .exclude(id=blog.id)
-
-        # Check for valid name and pin from session
-        visitor, visitor_name, visitor_pin, visitor_avatar = session_query(request)
 
         # Validated user has already commented?
         deja_commente = comments.filter(visitor=visitor).exists()
@@ -159,10 +167,12 @@ class PostDetailView(DetailView):
             # Remember valid user name
             request.session['Visitor'] = cd['name']
             
+            post = self.object
             try:
                 new_comment = Comment(
-                                post= self.object,
+                                post= post,
                                 visitor= visitor,
+                                approved= not post.blog.moderated,
                                 body= cd['comment'])
                 new_comment.save()
             except:
@@ -187,7 +197,9 @@ def like_comment(request):
     try:
         comment = Comment.objects.get(id=comment_id)
 
-        if visitor in comment.fans.all():
+        if visitor == None:
+            return JsonResponse({ 'status': 'None' })
+        elif visitor in comment.fans.all():
             logger.debug(f"like_comment: remove")
             comment.fans.remove( visitor )
             liked = False
@@ -277,6 +289,21 @@ def delete_comment(request, *args, **kwargs):
     return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
 
 @require_GET
+def approve_comment(request, *args, **kwargs):
+    ''' Comment moderation from Post Detail View '''
+    logger.debug(f"approve_comment: {kwargs}")
+
+    try:
+        comment = Comment.objects.get(pk= kwargs['pk'])
+        logger.debug(f"approve_comment: {comment}")
+        comment.approved = True
+        comment.save()
+    except:
+        logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
+
+    return HttpResponseRedirect( request.META.get('HTTP_REFERER') )
+
+@require_GET
 def move_post_to(request, *args, **kwargs):
     ''' Moving post between blogs - Post Detail View '''
     logger.debug(f"move_post_to: {kwargs}")
@@ -320,7 +347,7 @@ class PostIndexView(ListView):
         context = super(ListView, self).get_context_data(** kwargs)
         try:
             context ['query_status'] = self.query_status
-            context ['blog'] = Blog.objects.get(id=self.kwargs['blog_id'])
+            context ['blog'] = Blog.objects.get(slug=self.kwargs['slug'])
             context ['blogs'] = Blog.objects.all().exclude(id= context['blog'].id )
         except:
             logger.debug(f"{thisfunc()}: Exception:'{sys.exc_info()[0]}'")
@@ -328,7 +355,7 @@ class PostIndexView(ListView):
 
     def get_queryset(self):
         ''' Just published posts belonging to specified blog '''
-        return Post.objects.filter(status=self.query_status, blog=self.kwargs['blog_id'])
+        return Post.objects.filter(status=self.query_status, blog__slug=self.kwargs['slug'])
     
 
 # -----------------------------------------------------

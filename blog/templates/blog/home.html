@@ -12,7 +12,7 @@
                 {{ blog.title }}
             </div>
             <div class="message-body">
-                <a href="{% url 'blog:index' blog_id=blog.id slug=blog.slug %}">
+                <a href="{% url 'blog:index' slug=blog.slug %}">
                     &ldquo;{{ blog.description|truncatechars:28 }}&rdquo;
                 </a><br>
             </div>

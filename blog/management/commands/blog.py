@@ -2,9 +2,9 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import slugify
 from django.utils import timezone
+from django.contrib.auth.models import User
 from blog.models import Blog, Post
 from bs4 import BeautifulSoup
-from accounts.models import CustomUser
 import requests
 import sys, os, os.path
 import inspect

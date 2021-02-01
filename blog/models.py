@@ -35,8 +35,8 @@ class Blog(models.Model):
     status_values = [v[0] for v in STATUS]
 
     title = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+    slug = models.SlugField(max_length=100, unique=True)
+    owner = models.ForeignKey(User,
                             on_delete=models.CASCADE,
                             related_name='blogs')
     status = models.CharField(max_length=10,
@@ -51,6 +51,7 @@ class Blog(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     last_post = models.DateTimeField(null=True)
     one_comment = models.BooleanField(default=False)
+    moderated = models.BooleanField(default=False)
 
     class Meta:
         ordering = ("-created",)
@@ -60,7 +61,7 @@ class Blog(models.Model):
 
     def get_absolute_url(self):
         return reverse('blog:index',
-                       args=[self.id, self.slug])
+                       args=[self.slug,])
 
     def update_last_post(self):
         self.last_post = timezone.now()
@@ -78,7 +79,7 @@ class Post(models.Model):
     title = models.CharField(max_length=250)
     slug = models.SlugField(max_length=250,
                             unique_for_date='publish')
-    author = models.ForeignKey(settings.AUTH_USER_MODEL,
+    author = models.ForeignKey(User,
                               on_delete=models.CASCADE,
                               related_name='blog_posts')
     blog = models.ForeignKey( Blog,
@@ -140,7 +141,7 @@ class Comment (models.Model):
                     related_name='comments')
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    active = models.BooleanField(default=True) 
+    approved = models.BooleanField(default=False)
     body = models.CharField(max_length=300)
     fans = models.ManyToManyField(
                     Visitor,

@@ -30,7 +30,7 @@
             {{ post.body|striptags|truncatewords:50 }}
             {% endautoescape %}
             <br>
-            <small><a>Like</a> <a>Reply</a></small>
+            <span class="is-size-7 has-text-info">Comments({{ post.comments.count }})</span>
             </p>
         </div>
     {% endfor %}
@@ -48,11 +48,11 @@
                     <div class="dropdown-menu" id="dropdown-menu" role="menu">
                         <div class="dropdown-content">
                             <p class="pl-2 is-size-7 has-text-weight-bold">Show status:</p>
-                            <a href="{% url 'blog:index-draft' blog_id=blog.pk %}" class="dropdown-item" style="align: center">
+                            <a href="{% url 'blog:index-draft' slug=blog.slug %}" class="dropdown-item" style="align: center">
                             -&nbsp;Draft&nbsp;-</a>
-                            <a href="{% url 'blog:index' blog_id=blog.pk slug=blog.slug %}" class="dropdown-item" style="align: center">
+                            <a href="{% url 'blog:index' slug=blog.slug %}" class="dropdown-item" style="align: center">
                             -&nbsp;Published&nbsp;-</a>
-                            <a href="{% url 'blog:index-deleted' blog_id=blog.pk %}" class="dropdown-item" style="align: center">
+                            <a href="{% url 'blog:index-deleted' slug=blog.slug %}" class="dropdown-item" style="align: center">
                             -&nbsp;Deleted&nbsp;-</a>
                         </div>
                     </div>

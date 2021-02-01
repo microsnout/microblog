@@ -89,24 +89,34 @@
             <div class="media-content">
                 <a href="/blog/visitor/{{ comment.visitor.id }}">{{ comment.visitor.name }}</a>
                 <span class="is-size-7">{{ comment.created }}</span>
-                {{ comment.body|linebreaks }}
-                <div class="is-flex is-flex-direction-row is-align-content-center">
-                    <div class="is-flex is-align-content-center">
-                        {% if visitor in comment.fans.all %}
-                        <a class="likeIcon icon is-small has-text-success" data-id="{{ comment.id }}" href="#">
-                        {% else %}
-                        <a class="likeIcon icon is-small has-text-grey" data-id="{{ comment.id }}" href="#">
-                        {% endif %}
-                            <i class="fas fa-check-square"></i>
-                        </a>
-                        {% with total_likes=comment.fans.count %}
-                        <span class="ml-1 is-size-7">(<span class="iconCount">{{ total_likes }}</span>)</span>
-                        {% endwith %}
-                    </div>
+                {% if comment.approved %}
+                <div class="">
+                {% else %}
+                <div class="has-text-danger">
+                {% endif %}
+                    {{ comment.body|linebreaks }}
+                </div>
+                <div class="is-flex is-flex-direction-row">
+                    {% if visitor in comment.fans.all %}
+                    <a class="likeIcon icon has-text-success" data-id="{{ comment.id }}" href="#">
+                    {% else %}
+                    <a class="likeIcon icon has-text-info" data-id="{{ comment.id }}" href="#">
+                    {% endif %}
+                        <i class="fas fa-thumbs-up"></i>
+                    </a>
+                    {% with total_likes=comment.fans.count %}
+                        <span class="mr-4 is-size-7">(<span class="iconCount">{{ total_likes }}</span>)</span>
+                    {% endwith %}
                     {% if valid_visitor == comment.visitor.name %}
-                    <div class="ml-3">
-                        <a href="/blog/delete_comment/{{ comment.pk }}" class="delete is-small"></a>
-                    </div>
+                        &bull;
+                        <a class="mx-4" href="/blog/delete_comment/{{ comment.pk }}"><i class="fas fa-trash-alt is-info"></i></a>
+                    {% endif %}
+                    {% if user.is_staff %}
+                        &bull;
+                        <a class="mx-4"><i class="fas fa-edit"></i></a>
+                        {% if comment.approved is False  %}
+                        <a class="mx-4" href="/blog/approve_comment/{{ comment.pk }}"><i class="fas fa-check-circle"></i></a>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -279,7 +289,7 @@
                 if ( status == 'liked' ) {
                     oIcon.removeClass('has-text-grey has-text-success').addClass('has-text-success');
                     oCount.text(++likes);
-                } else {
+                } else if ( status == 'unliked') {
                     oIcon.removeClass('has-text-grey has-text-success').addClass('has-text-grey');
                     oCount.text(--likes);
                 }
