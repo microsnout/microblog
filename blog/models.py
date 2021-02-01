@@ -35,7 +35,7 @@ class Blog(models.Model):
     status_values = [v[0] for v in STATUS]
 
     title = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100, unique=True)
+    slug  = models.SlugField(max_length=100, unique=True)
     owner = models.ForeignKey(User,
                             on_delete=models.CASCADE,
                             related_name='blogs')
@@ -52,6 +52,7 @@ class Blog(models.Model):
     last_post = models.DateTimeField(null=True)
     one_comment = models.BooleanField(default=False)
     moderated = models.BooleanField(default=False)
+    signature = models.CharField(max_length=30, blank=True)
 
     class Meta:
         ordering = ("-created",)
@@ -139,14 +140,15 @@ class Comment (models.Model):
                     Visitor,
                     on_delete=models.CASCADE,
                     related_name='comments')
-    created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
-    approved = models.BooleanField(default=False)
-    body = models.CharField(max_length=300)
     fans = models.ManyToManyField(
                     Visitor,
                     related_name='comments_liked',
                     blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    approved = models.BooleanField(default=False)
+    body = models.CharField(max_length=300)
+    annotation = models.CharField(max_length=300, blank=True)
 
     class Meta:
         ordering = ('created',)

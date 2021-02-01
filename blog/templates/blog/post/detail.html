@@ -78,53 +78,93 @@
             </p>
         {% endwith %}
     </div>
-    <div class="p-3">
-    {% for comment in comments %}
-        <div class="media">
-            <figure class="media-left">
-                <div class="image is-32x32">
-                    <img src="{{ comment.visitor.avatar.url }}">
-                </div>
-            </figure>
-            <div class="media-content">
-                <a href="/blog/visitor/{{ comment.visitor.id }}">{{ comment.visitor.name }}</a>
-                <span class="is-size-7">{{ comment.created }}</span>
-                {% if comment.approved %}
-                <div class="">
-                {% else %}
-                <div class="has-text-danger">
-                {% endif %}
-                    {{ comment.body|linebreaks }}
-                </div>
-                <div class="is-flex is-flex-direction-row">
-                    {% if visitor in comment.fans.all %}
-                    <a class="likeIcon icon has-text-success" data-id="{{ comment.id }}" href="#">
+    <div id="id_comment-block" class="p-3">
+        <div id="id_comment-list" class="">
+        {% for comment in comments %}
+            <div class="media">
+                <figure class="media-left">
+                    <div class="image is-32x32">
+                        <img src="{{ comment.visitor.avatar.url }}">
+                    </div>
+                </figure>
+                <div class="comment-block media-content">
+                    <a href="/blog/visitor/{{ comment.visitor.id }}">{{ comment.visitor.name }}</a>
+                    <span class="is-size-7">{{ comment.created }}</span>
+                    {% if comment.approved %}
+                    <div class="">
                     {% else %}
-                    <a class="likeIcon icon has-text-info" data-id="{{ comment.id }}" href="#">
+                    <div class="has-text-danger">
                     {% endif %}
-                        <i class="fas fa-thumbs-up"></i>
-                    </a>
-                    {% with total_likes=comment.fans.count %}
-                        <span class="mr-4 is-size-7">(<span class="iconCount">{{ total_likes }}</span>)</span>
-                    {% endwith %}
-                    {% if valid_visitor == comment.visitor.name %}
-                        &bull;
-                        <a class="mx-4" href="/blog/delete_comment/{{ comment.pk }}"><i class="fas fa-trash-alt is-info"></i></a>
-                    {% endif %}
-                    {% if user.is_staff %}
-                        &bull;
-                        <a class="mx-4"><i class="fas fa-edit"></i></a>
-                        {% if comment.approved is False  %}
-                        <a class="mx-4" href="/blog/approve_comment/{{ comment.pk }}"><i class="fas fa-check-circle"></i></a>
+                        {{ comment.body|linebreaks }}
+                    </div>
+                    {% if comment.annotation %}
+                    <div class="is-size-7 has-text-weight-bold is-italic">
+                        {% if blog.signature %}
+                        {{ blog.signature }}&nbsp;
                         {% endif %}
+                        &ldquo;{{ comment.annotation }}&rdquo;
+                    </div>
                     {% endif %}
+                    <div class="comment-icon-block is-flex is-flex-direction-row">
+                        {% if visitor in comment.fans.all %}
+                        <a class="likeIcon icon has-text-success" data-id="{{ comment.id }}" href="#">
+                        {% else %}
+                        <a class="likeIcon icon has-text-info" data-id="{{ comment.id }}" href="#">
+                        {% endif %}
+                            <i class="fas fa-thumbs-up"></i>
+                        </a>
+                        {% with total_likes=comment.fans.count %}
+                            <span class="mr-4 is-size-7">(<span class="iconCount">{{ total_likes }}</span>)</span>
+                        {% endwith %}
+                        {% if valid_visitor == comment.visitor.name or user.is_staff %}
+                            &bull;
+                            <a class="mx-4" href="/blog/delete_comment/{{ comment.pk }}"><i class="fas fa-trash-alt is-info"></i></a>
+                        {% endif %}
+                        {% if user.is_staff %}
+                            &bull;
+                            <a class="editIcon icon has-text-info mx-4" data-id="{{ comment.id }}" href="#">
+                                <i class="fas fa-edit"></i></a>
+                            {% if comment.approved is False  %}
+                            <a class="mx-4" href="/blog/approve_comment/{{ comment.pk }}"><i class="fas fa-check-circle"></i></a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
+        {% empty %}
+            <p>There are no comments yet.</p>
+        {% endfor %}
         </div>
-    {% empty %}
-        <p>There are no comments yet.</p>
-    {% endfor %}
-        <div class="my-4 p-3" style="border: 1px solid hsl(204,86%,53%);">
+        <div id="id_notation-block" style="display: none">
+            <form id="id_notation-save-form" method="post" prefix="notation" autocomplete='off'>
+                {% csrf_token %}
+                <div class="is-flex is-flex-direction-column">
+                    <textarea
+                        id="id_notation-comment"
+                        class="my-3"
+                        name="notation-comment"
+                        rows="3" cols="40"
+                        placeholder="comment..."
+                        maxlength="300"
+                        required>
+                    </textarea>
+                    <input
+                        id="id_notation-id"
+                        type='hidden'
+                        name='notation-id'
+                        value='0'>
+                    <div class="is-flex">
+                        <input 
+                            id="id_notation-save-button"
+                            class="button is-info is-small mb-3" 
+                            type='submit' 
+                            name='notation-button' 
+                            value='Save'>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="id_add-comment-box" class="my-4 p-3" style="border: 1px solid hsl(204,86%,53%);">
             <form id="visitor-form" method='post' prefix='visitor' autocomplete='off'>
                 {% csrf_token %}
                 <div class="is-flex">
@@ -274,6 +314,15 @@
     function openAvatarTable() {
         document.querySelector("#id_avatar-table").style.display="flex";
     }
+
+    $('.editIcon').on('click', function() {
+        var oIcon = $(this);
+        var comment_id = oIcon.data('id');
+        oIcon.parent().before( $('#id_notation-block') );
+        $('#id_notation-block').css('display', 'flex');
+        $('#id_notation-id').prop('value', comment_id);
+        return false;
+    });
 
     $('.likeIcon').on('click', function() {
         var oIcon = $(this);

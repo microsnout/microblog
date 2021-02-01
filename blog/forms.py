@@ -43,3 +43,10 @@ class PostEditForm(forms.ModelForm):
         model = Post
         fields = ['status', 'title', 'body', ]
     
+class NotationForm(forms.Form):
+    comment = forms.CharField(
+            max_length=300,
+            widget= forms.Textarea(attrs={
+                        'placeholder': "Your comment...",
+                        'class': "p-1", }))
+    id = forms.IntegerField()

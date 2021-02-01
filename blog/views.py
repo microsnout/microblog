@@ -7,7 +7,7 @@ from django.urls import reverse
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
 from django.core.mail import send_mail
 from django.db.models import Count
-from .forms import EmailPostForm, VisitorForm, PostEditForm
+from .forms import EmailPostForm, VisitorForm, PostEditForm, NotationForm
 from .models import Blog, Post, Comment, Visitor
 from common.decorators import ajax_required
 
@@ -136,6 +136,9 @@ class PostDetailView(DetailView):
         if 'comment-button' in request.POST:
             visitor_form = VisitorForm(post_data, prefix='visitor') 
             self.add_comment(request, visitor_form)
+        elif 'notation-button' in request.POST:
+            notation_form = NotationForm(post_data, prefix='notation')
+            self.add_notation(request, notation_form)
         elif 'send-email' in request.POST:
             form = EmailPostForm(request.POST)
             if form.is_valid():
@@ -152,6 +155,22 @@ class PostDetailView(DetailView):
 
         return HttpResponseRedirect(request.path)
     
+    def add_notation(self, request, form):
+        if form.is_valid():
+            cd = form.cleaned_data
+            logger.debug(f"HomeView: notation form valid: cd={cd}")
+
+            try:
+                comment = Comment.objects.get( id=cd['id'] )
+                comment.annotation = cd['comment']
+                comment.save()
+            except:
+                logger.debug(f"AddComment Exception:'{sys.exc_info()[0]}'")
+        else:
+            cd = form.cleaned_data
+            logger.debug(f"HomeView: notation form invalid: cd={cd}")
+
+
     def add_comment(self, request, form):
         if form.is_valid():
             cd = form.cleaned_data
